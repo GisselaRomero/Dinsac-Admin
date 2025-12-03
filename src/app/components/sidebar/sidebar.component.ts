@@ -12,7 +12,7 @@ import { HttpClient, HttpClientModule } from '@angular/common/http';
 })
 export class SidebarComponent implements OnInit {
   totalPendientes = 0;
-  private readonly API_URL = 'http://localhost:3000';
+  private readonly API_URL = 'https://backend-dinsac-hlf0.onrender.com';
 
   constructor(private router: Router, private http: HttpClient) {}
 

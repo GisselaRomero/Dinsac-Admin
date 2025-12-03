@@ -36,7 +36,7 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
   constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
-    this.socket = io('http://localhost:3000', {
+    this.socket = io('https://backend-dinsac-hlf0.onrender.com', {
       transports: ['websocket', 'polling']
     });
 
@@ -96,7 +96,7 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
   }
 
   cargarClientes(): void {
-    this.http.get<Cliente[]>('http://localhost:3000/clientes-chat')
+    this.http.get<Cliente[]>('https://backend-dinsac-hlf0.onrender.com/clientes-chat')
       .subscribe({
         next: (res) => {
           const idsExistentes = new Set(this.clientes.map(c => c.id));
@@ -126,7 +126,7 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
     const cliente = this.clientes.find(c => c.id === clienteId);
     if (cliente) cliente.notificaciones = 0;
 
-    this.http.get<Mensaje[]>(`http://localhost:3000/chats/${clienteId}`)
+    this.http.get<Mensaje[]>(`https://backend-dinsac-hlf0.onrender.com/chats/${clienteId}`)
       .subscribe({
         next: (res) => {
           const cliente = this.clientes.find(c => c.id === clienteId);
@@ -166,7 +166,7 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
     formData.append('archivo', archivo);
     formData.append('clienteId', this.clienteSeleccionado);
 
-    this.http.post('http://localhost:3000/upload-chat', formData)
+    this.http.post('https://backend-dinsac-hlf0.onrender.com/upload-chat', formData)
       .subscribe({
         next: (res: any) => {
           const nuevoMensaje: Mensaje = {
@@ -192,7 +192,7 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
     const clienteNombre = this.getClienteNombre();
     if (!confirm(`¿Estás seguro de eliminar toda la conversación con ${clienteNombre}?`)) return;
 
-    this.http.delete(`http://localhost:3000/chats/${this.clienteSeleccionado}`)
+    this.http.delete(`https://backend-dinsac-hlf0.onrender.com/chats/${this.clienteSeleccionado}`)
       .subscribe({
         next: () => {
           this.mensajes = [];

@@ -114,7 +114,7 @@ export class BannerofertasComponent {
       formData.append('image', file);
       formData.append('tipo', 'carrusel');
 
-      this.http.post('http://localhost:3000/banner', formData)
+      this.http.post('https://backend-dinsac-hlf0.onrender.com/banner', formData)
         .subscribe({
           next: (res: any) => {
             uploadedCount++;

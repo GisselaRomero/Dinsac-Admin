@@ -52,7 +52,7 @@ export class GestionCotizacionesComponent implements OnInit {
   completadas = 0;
   canceladas = 0;
 
-  private readonly API_URL = 'http://localhost:3000';
+  private readonly API_URL = 'https://backend-dinsac-hlf0.onrender.com';
 
   constructor(private http: HttpClient) {}
 
