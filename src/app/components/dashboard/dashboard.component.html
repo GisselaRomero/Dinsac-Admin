@@ -1,0 +1,284 @@
+<!-- ============================================ -->
+<!-- dashboard.component.html -->
+<!-- ============================================ -->
+<section class="dashboard-modern">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <!-- Header -->
+  <div class="header-section">
+    <h1 class="main-title">📊 Dashboard DINSAC</h1>
+    <p class="subtitle">Panel de control y análisis de cotizaciones</p>
+  </div>
+
+  <!-- KPIs principales -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-header">
+        <div class="kpi-icon blue">
+          <i class="fas fa-users"></i>
+        </div>
+        <span class="kpi-trend positive">{{ tendenciaClientes }}</span>
+      </div>
+      <h3 class="kpi-label">Clientes Registrados</h3>
+      <p class="kpi-value">{{ totalClientes }}</p>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-header">
+        <div class="kpi-icon purple">
+          <i class="fas fa-comments"></i>
+        </div>
+        <span class="kpi-trend positive">{{ tendenciaInteracciones }}</span>
+      </div>
+      <h3 class="kpi-label">Interacciones IA</h3>
+      <p class="kpi-value">{{ totalInteraccionesIA }}</p>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-header">
+        <div class="kpi-icon cyan">
+          <i class="fas fa-file-alt"></i>
+        </div>
+        <span class="kpi-trend positive">{{ tendenciaCotizaciones }}</span>
+      </div>
+      <h3 class="kpi-label">Cotizaciones</h3>
+      <p class="kpi-value">{{ totalCotizaciones }}</p>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-header">
+        <div class="kpi-icon green">
+          <i class="fas fa-chart-line"></i>
+        </div>
+        <span class="kpi-trend positive">{{ tendenciaConversion }}</span>
+      </div>
+      <h3 class="kpi-label">Tasa Conversión</h3>
+      <p class="kpi-value">{{ tasaConversion }}%</p>
+    </div>
+  </div>
+
+  <!-- Gráficas principales -->
+  <div class="charts-grid">
+    <div class="chart-card-modern">
+      <h3 class="chart-title">
+        <i class="fas fa-calendar-alt"></i>
+        Cotizaciones por Mes (Últimos 6 meses)
+      </h3>
+      <div class="chart-container">
+        <canvas baseChart
+          [data]="barChartData"
+          [options]="barChartOptions"
+          chartType="bar">
+        </canvas>
+      </div>
+    </div>
+
+    <div class="chart-card-modern">
+      <h3 class="chart-title">
+        <i class="fas fa-phone"></i>
+        Canales de Contacto
+      </h3>
+      <div class="chart-container pie-container">
+        <canvas baseChart
+          *ngIf="pieChartData.datasets[0].data.length > 0"
+          [data]="pieChartData"
+          [options]="pieChartOptions"
+          chartType="pie">
+        </canvas>
+        <div *ngIf="pieChartData.datasets[0].data.length === 0" class="sin-datos">
+          Sin datos disponibles
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top 5 Rankings -->
+  <div class="tops-grid">
+    <!-- Top Productos -->
+    <div class="top-card">
+      <h3 class="top-title">
+        <i class="fas fa-box"></i>
+        Top 5 Productos Más Cotizados
+      </h3>
+      <div class="top-list">
+        <div *ngFor="let producto of topProductos; let i = index" 
+             class="top-item">
+          <div class="top-rank" 
+               [style.background]="getColorProducto(i) + '15'" 
+               [style.color]="getColorProducto(i)">
+            {{ i + 1 }}
+          </div>
+          <div class="top-info">
+            <div class="top-name">{{ producto.name }}</div>
+            <div class="top-count">{{ producto.count }} cotizaciones</div>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" 
+                 [style.width.%]="producto.porcentaje"
+                 [style.background]="getColorProducto(i)">
+            </div>
+          </div>
+        </div>
+        <div *ngIf="topProductos.length === 0" class="sin-datos-top">
+          No hay datos disponibles
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Clientes -->
+    <div class="top-card">
+      <h3 class="top-title">
+        <i class="fas fa-user-tie"></i>
+        Top 5 Clientes Más Activos
+      </h3>
+      <div class="top-list">
+        <div *ngFor="let cliente of topClientes; let i = index" 
+             class="top-item">
+          <div class="top-rank" 
+               [style.background]="getColorCliente(i) + '15'" 
+               [style.color]="getColorCliente(i)">
+            {{ i + 1 }}
+          </div>
+          <div class="top-info">
+            <div class="top-name">{{ cliente.name }}</div>
+            <div class="top-count">{{ cliente.count }} cotizaciones</div>
+          </div>
+          <div class="badge-count" 
+               [style.background]="getColorCliente(i) + '15'"
+               [style.color]="getColorCliente(i)">
+            {{ cliente.count }}
+          </div>
+        </div>
+        <div *ngIf="topClientes.length === 0" class="sin-datos-top">
+          No hay datos disponibles
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======= HISTORIAL DE COTIZACIONES (TU CÓDIGO ORIGINAL) ======= -->
+  <div class="cotizaciones-section">
+    <div class="section-header">
+      <h4>📋 Historial de Cotizaciones</h4>
+      <div class="section-actions">
+        <button class="btn-export" (click)="exportarCotizaciones()"
+                [disabled]="historialCotizaciones.length === 0">
+          📤 Exportar CSV
+        </button>
+        <span class="total-registros">
+          Total: {{ historialCotizaciones.length }} cotizaciones
+        </span>
+      </div>
+    </div>
+
+    <!-- FILTROS -->
+    <div class="filtros-avanzados">
+      <div class="filtro-grupo">
+        <label>🔍 Buscar:</label>
+        <input
+          type="text"
+          placeholder="Nombre, email o DNI..."
+          [(ngModel)]="filtroTexto"
+          (input)="onFiltroChange()"
+          class="filtro-input">
+      </div>
+
+      <div class="filtro-grupo">
+        <label>📅 Desde:</label>
+        <input type="date" [(ngModel)]="fechaDesde" (change)="onFiltroChange()" class="filtro-input">
+      </div>
+
+      <div class="filtro-grupo">
+        <label>📅 Hasta:</label>
+        <input type="date" [(ngModel)]="fechaHasta" (change)="onFiltroChange()" class="filtro-input">
+      </div>
+
+      <div class="filtro-grupo">
+        <label>📞 Contacto:</label>
+        <select [(ngModel)]="filtroContacto" (change)="onFiltroChange()" class="filtro-select">
+          <option value="">Todos</option>
+          <option *ngFor="let tipo of tiposContactoDisponibles" [value]="tipo">{{ tipo }}</option>
+        </select>
+      </div>
+
+      <div class="filtro-grupo">
+        <label>📂 Categoría:</label>
+        <select [(ngModel)]="filtroCategoria" (change)="onFiltroChange()" class="filtro-select">
+          <option value="">Todas</option>
+          <option *ngFor="let categoria of categoriasDisponibles" [value]="categoria">{{ categoria }}</option>
+        </select>
+      </div>
+
+      <div class="filtro-grupo">
+        <button class="btn-limpiar" (click)="limpiarFiltro()">🧹 Limpiar Filtros</button>
+      </div>
+    </div>
+
+    <!-- TABLA -->
+    <table class="tabla-cotizaciones">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>👤 Cliente</th>
+          <th>📧 Email</th>
+          <th>🆔 DNI/RUC</th>
+          <th>📅 Fecha</th>
+          <th>📞 Contacto</th>
+          <th>🛍️ Productos</th>
+          <th>⚙️ Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let cot of cotizacionesPaginadas; let i = index" [class.fila-par]="i % 2 === 0">
+          <td>{{ (paginaActual - 1) * itemsPorPagina + i + 1 }}</td>
+          <td class="nombre-cliente">{{ cot.nombre }}</td>
+          <td class="email-cliente">{{ cot.email }}</td>
+          <td>{{ cot.dniRuc || cot.dni || 'N/A' }}</td>
+          <td class="fecha-cotizacion">{{ cot.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td>
+            <a *ngIf="cot.contacto?.toLowerCase().includes('whatsapp')" [href]="'https://wa.me/' + cot.telefonoMovil" target="_blank" class="contacto-link whatsapp">📱 {{ cot.telefonoMovil }}</a>
+            <a *ngIf="cot.contacto?.toLowerCase().includes('correo')" [href]="'mailto:' + cot.email" class="contacto-link correo">📧 {{ cot.email }}</a>
+            <a *ngIf="cot.contacto?.toLowerCase().includes('tel')" [href]="'tel:' + cot.telefonoMovil" class="contacto-link telefono">☎️ {{ cot.telefonoMovil }}</a>
+          </td>
+
+          <td>
+            <div *ngIf="cot.productos?.length > 0; else sinProductos">
+              <ul class="lista-productos">
+                <li *ngFor="let p of cot.productos"><span class="categoria">{{ p.categoria }}</span> - <span class="equipo">{{ p.equipo }}</span></li>
+              </ul>
+            </div>
+            <ng-template #sinProductos><span class="sin-productos">Sin productos</span></ng-template>
+          </td>
+
+          <td class="acciones">
+            <button class="btn-icon view" (click)="verPDF(cot)"><i class="fas fa-eye"></i></button>
+            <button class="btn-icon download" (click)="descargarPDF(cot)"><i class="fas fa-download"></i></button>
+            <button class="btn-icon delete" (click)="eliminarCotizacion(cot._id)"><i class="fas fa-trash"></i></button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Mensaje cuando no hay resultados -->
+    <div *ngIf="historialCotizaciones.length === 0" class="sin-resultados">
+      <div class="mensaje-vacio">
+        <h3>🔍 No se encontraron cotizaciones</h3>
+        <p>Intenta ajustar los filtros de búsqueda</p>
+      </div>
+    </div>
+
+    <!-- PAGINACIÓN -->
+    <div class="paginacion" *ngIf="totalPaginas > 1">
+      <button class="btn-pagina" [disabled]="paginaActual === 1" (click)="cambiarPagina(paginaActual - 1)">◀ Anterior</button>
+
+      <span class="info-pagina">Página {{ paginaActual }} de {{ totalPaginas }} ({{ historialCotizaciones.length }} registros)</span>
+
+      <div class="numeros-pagina">
+        <button *ngFor="let pagina of paginasArray" class="btn-numero" [class.activa]="pagina === paginaActual" (click)="cambiarPagina(pagina)" [hidden]="paginasArray.length > 10 && (pagina < paginaActual - 2 || pagina > paginaActual + 2)">{{ pagina }}</button>
+      </div>
+
+      <button class="btn-pagina" [disabled]="paginaActual === totalPaginas" (click)="cambiarPagina(paginaActual + 1)">Siguiente ▶</button>
+    </div>
+  </div>
+</section>

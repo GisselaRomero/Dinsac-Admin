@@ -1,0 +1,293 @@
+/* 🎨 CONTENEDOR PRINCIPAL */
+.productos-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 25px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+}
+
+/* 🧾 TÍTULO */
+.form-title {
+  grid-column: 1 / -1;
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a4d6c;
+  border-left: 4px solid #368a91;
+  padding-left: 10px;
+  border-bottom: 2px solid #368a91;
+  margin-bottom: 20px;
+  padding-bottom: 8px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 🧱 FORMULARIO DE PRODUCTO */
+form {
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  padding: 25px;
+  margin-bottom: 30px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+/* 📋 ETIQUETAS */
+.form-group label {
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 6px;
+  color: #1a4d6c;
+}
+
+/* ✏️ CAMPOS DE ENTRADA */
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 15px;
+  transition: 0.2s ease;
+  background-color: white;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: #368a91;
+  box-shadow: 0 0 4px rgba(54, 138, 145, 0.4);
+  outline: none;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* ✅ BOTONES DEL FORMULARIO */
+form button {
+  padding: 10px 15px;
+  font-size: 15px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+form button[type="submit"] {
+  background-color: #1a4d6c;
+  color: white;
+  font-weight: 600;
+}
+
+form button[type="submit"]:hover {
+  background-color: #368a91;
+}
+
+form button[type="button"] {
+  background-color: #6c757d;
+  color: white;
+}
+
+form button[type="button"]:hover {
+  background-color: #545b62;
+}
+
+/* 🔍 CAMPO DE BÚSQUEDA */
+.busqueda-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 25px;
+}
+
+.busqueda-container input {
+  flex: 1;
+  padding: 10px 15px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 15px;
+}
+
+.busqueda-container button {
+  background-color: #368a91;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.busqueda-container button:hover {
+  background-color: #1a4d6c;
+}
+
+/* 🧩 FILTRO DE CATEGORÍAS */
+.category-filters {
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 20px 25px;
+  margin-bottom: 30px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+}
+
+.category-filters h3 {
+  font-size: 20px;
+  color: #1a4d6c;
+  margin-bottom: 15px;
+  border-left: 4px solid #368a91;
+  padding-left: 10px;
+}
+
+.filter-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.filter-buttons button {
+  padding: 8px 15px;
+  border: 2px solid #368a91;
+  border-radius: 6px;
+  background-color: #f1f9ff;
+  color: #1a4d6c;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.filter-buttons button:hover {
+  background-color: #1a4d6c;
+  color: white;
+}
+
+.filter-buttons button.active {
+  background-color: #1a4d6c;
+  color: white;
+}
+
+/* 📊 TABLA DE PRODUCTOS */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+th,
+td {
+  text-align: left;
+  padding: 12px 15px;
+  border-bottom: 1px solid #eee;
+  font-size: 15px;
+}
+
+th {
+  background-color: #1a4d6c;
+  color: white;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+td img {
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  object-fit: cover;
+  max-width: 80px;
+  height: 60px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* 🧮 MENSAJE DE SIN DATOS */
+p {
+  text-align: center;
+  padding: 20px;
+  font-size: 16px;
+  color: #666;
+}
+
+/* 🧰 BOTONES DE ACCIÓN */
+.btn-edit,
+.btn-delete {
+  padding: 7px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s ease;
+  border: none;
+}
+
+.btn-edit {
+  background-color: #b2c248;
+  color: #212529;
+}
+
+.btn-edit:hover {
+  background-color: #c5d954;
+}
+
+.btn-delete {
+  background-color: #bf1224;
+  color: white;
+}
+
+.btn-delete:hover {
+  background-color: #d91a2e;
+}
+
+/* 📱 RESPONSIVE DESIGN */
+@media (max-width: 992px) {
+  form {
+    grid-template-columns: 1fr;
+  }
+
+  .form-group.full-width {
+    grid-column: 1 / 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .filter-buttons {
+    flex-direction: column;
+  }
+
+  .filter-buttons button {
+    width: 100%;
+    text-align: center;
+  }
+
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    font-size: 14px;
+  }
+
+  th, td {
+    padding: 10px;
+  }
+
+  .busqueda-container {
+    flex-direction: column;
+  }
+
+  .busqueda-container button {
+    width: 100%;
+  }
+}

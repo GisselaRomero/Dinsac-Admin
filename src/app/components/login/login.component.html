@@ -1,0 +1,14 @@
+<div class="login-container">
+    <h2>Login</h2>
+    <form (submit)="onLogin(); $event.preventDefault()">
+      <label>Usuario:</label>
+      <input [(ngModel)]="username" name="username" placeholder="Usuario" required />
+  
+      <label>Contraseña:</label>
+      <input [(ngModel)]="password" name="password" placeholder="Contraseña" type="password" required />
+  
+      <button type="submit">Iniciar Sesión</button>
+      <p>{{ message }}</p>
+    </form>
+  </div>
+  

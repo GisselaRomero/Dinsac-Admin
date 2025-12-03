@@ -1,0 +1,149 @@
+<section class="reporte-cotizaciones">
+  <!-- Header -->
+  <div class="reporte-header">
+    <h2>📊 Reportes de Cotizaciones</h2>
+    <p class="subtitle">Análisis y exportación de datos de cotizaciones</p>
+  </div>
+
+  <!-- Estadísticas rápidas -->
+  <div class="estadisticas-grid">
+    <div class="stat-card total">
+      <div class="stat-icon">📋</div>
+      <div class="stat-info">
+        <span class="stat-label">Total Cotizaciones</span>
+        <span class="stat-value">{{ totalCotizaciones }}</span>
+      </div>
+    </div>
+
+    <div class="stat-card pendiente">
+      <div class="stat-icon">⏳</div>
+      <div class="stat-info">
+        <span class="stat-label">Pendientes</span>
+        <span class="stat-value">{{ cotizacionesPendientes }}</span>
+      </div>
+    </div>
+
+    <div class="stat-card atendida">
+      <div class="stat-icon">✅</div>
+      <div class="stat-info">
+        <span class="stat-label">Atendidas</span>
+        <span class="stat-value">{{ cotizacionesAtendidas }}</span>
+      </div>
+    </div>
+
+    <div class="stat-card cancelada">
+      <div class="stat-icon">❌</div>
+      <div class="stat-info">
+        <span class="stat-label">Canceladas</span>
+        <span class="stat-value">{{ cotizacionesCanceladas }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filtros-container">
+    <h3>🔍 Filtros de Búsqueda</h3>
+    
+    <div class="filtros-grid">
+      <div class="filtro-item">
+        <label>📅 Fecha Desde</label>
+        <mat-form-field appearance="outline">
+          <input matInput [matDatepicker]="picker1" [(ngModel)]="fechaInicio" 
+                 (dateChange)="filtrarCotizaciones()" placeholder="Selecciona fecha">
+          <mat-datepicker-toggle matSuffix [for]="picker1"></mat-datepicker-toggle>
+          <mat-datepicker #picker1></mat-datepicker>
+        </mat-form-field>
+      </div>
+
+      <div class="filtro-item">
+        <label>📅 Fecha Hasta</label>
+        <mat-form-field appearance="outline">
+          <input matInput [matDatepicker]="picker2" [(ngModel)]="fechaFin" 
+                 (dateChange)="filtrarCotizaciones()" placeholder="Selecciona fecha">
+          <mat-datepicker-toggle matSuffix [for]="picker2"></mat-datepicker-toggle>
+          <mat-datepicker #picker2></mat-datepicker>
+        </mat-form-field>
+      </div>
+
+      <div class="filtro-item">
+        <label>📊 Estado</label>
+        <mat-form-field appearance="outline">
+          <mat-select [(ngModel)]="estadoFiltro" (selectionChange)="filtrarCotizaciones()">
+            <mat-option value="todos">Todos los estados</mat-option>
+            <mat-option value="pendiente">Pendiente</mat-option>
+            <mat-option value="en proceso">En Proceso</mat-option>
+            <mat-option value="atendida">Atendida</mat-option>
+            <mat-option value="completada">Completada</mat-option>
+            <mat-option value="cancelada">Cancelada</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="filtro-item">
+        <label>&nbsp;</label>
+        <button mat-raised-button color="warn" (click)="limpiarFiltros()" class="btn-limpiar">
+          🧹 Limpiar Filtros
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Botones de exportación -->
+  <div class="botones-exportacion">
+    <button mat-raised-button color="primary" (click)="exportarPDF()" 
+            [disabled]="cotizacionesFiltradas.length === 0">
+      📄 Exportar PDF
+    </button>
+    <button mat-raised-button color="accent" (click)="exportarExcel()"
+            [disabled]="cotizacionesFiltradas.length === 0">
+      📊 Exportar Excel
+    </button>
+  </div>
+
+  <!-- Tabla de cotizaciones -->
+  <div class="tabla-contenedor">
+    <table class="tabla-reportes">
+      <thead>
+        <tr>
+          <th>N° Cotización</th>
+          <th>👤 Cliente</th>
+          <th>✉️ Email</th>
+          <th>📦 Productos</th>
+          <th>📊 Estado</th>
+          <th>📅 Fecha</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let cot of cotizacionesFiltradas">
+          <td class="numero-cot">{{ cot.numeroCotizacion || 'N/A' }}</td>
+          <td>{{ cot.nombre }}</td>
+          <td class="email-cell">{{ cot.email }}</td>
+          <td>
+            <div class="productos-lista">
+              <span *ngFor="let p of cot.productos" class="producto-tag">
+                {{ p.categoria || p.equipo }} ({{ p.cantidad }})
+              </span>
+              <span *ngIf="cot.productos.length === 0" class="sin-productos">Sin productos</span>
+            </div>
+          </td>
+          <td>
+            <span class="badge-estado" [style.background]="getEstadoColor(cot.estado) + '15'"
+                  [style.color]="getEstadoColor(cot.estado)">
+              {{ cot.estado | uppercase }}
+            </span>
+          </td>
+          <td>{{ cot.fecha | date: 'dd/MM/yyyy HH:mm' }}</td>
+        </tr>
+        <tr *ngIf="cotizacionesFiltradas.length === 0">
+          <td colspan="6" class="sin-datos">
+            <div class="mensaje-vacio">
+              <span class="icono-vacio">🔍</span>
+              <p>No se encontraron cotizaciones con los filtros aplicados</p>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+*/

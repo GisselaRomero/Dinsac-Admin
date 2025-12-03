@@ -1,0 +1,208 @@
+<div class="productos-container">
+  <form (ngSubmit)="createProduct()">
+    <h2 class="form-title">
+      {{ editingProductId ? 'Editar Producto' : 'Agregar Nuevo Producto' }}
+    </h2>
+
+    <div class="form-group">
+      <label for="codigo">Código:</label>
+      <input id="codigo" name="codigo" [(ngModel)]="newProduct.codigo" required />
+    </div>
+
+    <div class="form-group">
+      <label for="name">Nombre:</label>
+      <input id="name" name="name" [(ngModel)]="newProduct.name" required />
+    </div>
+
+    <div class="form-group">
+      <label for="stock">Stock:</label>
+      <input id="stock" type="number" name="stock" [(ngModel)]="newProduct.stock" required />
+    </div>
+
+    <!-- === Sección de imágenes === -->
+    <div *ngFor="let imgField of imageFields" class="form-group">
+      <label>{{ imgField.label }}:</label>
+
+      <!-- Selector modo -->
+      <div class="image-mode-toggle">
+        <label>
+          <input type="radio" [name]="imgField.name + 'Mode'" value="url" [(ngModel)]="imgField.mode" /> URL
+        </label>
+        <label>
+          <input type="radio" [name]="imgField.name + 'Mode'" value="file" [(ngModel)]="imgField.mode" /> Archivo
+        </label>
+      </div>
+
+      <!-- Campo URL -->
+      <input
+        *ngIf="imgField.mode === 'url'"
+        type="text"
+        [(ngModel)]="newProduct[imgField.name]"
+        [name]="imgField.name"
+        placeholder="https://..."
+      />
+
+      <!-- Campo archivo -->
+      <input
+        *ngIf="imgField.mode === 'file'"
+        type="file"
+        accept="image/*"
+        (change)="onFileSelected($event, imgField.name)"
+      />
+
+      <!-- Vista previa -->
+      <div class="image-preview" *ngIf="newProduct[imgField.name]">
+        <img [src]="newProduct[imgField.name]" alt="{{ imgField.label }}" />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="category">Categoría:</label>
+      <select id="category" name="category" [(ngModel)]="newProduct.category" required>
+        <option value="" disabled selected>Selecciona una categoría</option>
+        <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+      </select>
+    </div>
+
+    <!-- ✅ Tipo de producto -->
+    <div class="form-group">
+      <label for="estado">Tipo de producto:</label>
+      <select id="estado" name="estado" [(ngModel)]="newProduct.estado" required>
+        <option value="" disabled selected>Selecciona el tipo</option>
+        <option value="Normal">Normal</option>
+        <option value="Oferta">Oferta</option>
+      </select>
+    </div>
+    <div class="form-group">
+  <label for="description">Descripción:</label>
+  <textarea 
+    id="description" 
+    name="description" 
+    [(ngModel)]="newProduct.description" 
+    required
+    rows="4"
+  ></textarea>
+</div>
+
+    <!-- === Sección de video === -->
+<!-- === Sección de video === -->
+<div class="form-group">
+  <label for="video">Video del producto:</label>
+
+  <!-- Selector de modo -->
+  <div class="image-mode-toggle">
+    <label>
+      <input type="radio" name="videoMode" value="url" [(ngModel)]="videoMode" /> URL de YouTube
+    </label>
+    <label>
+      <input type="radio" name="videoMode" value="file" [(ngModel)]="videoMode" /> Archivo (⚠️ Max 5MB)
+    </label>
+  </div>
+
+  <!-- Campo URL -->
+  <input
+    *ngIf="videoMode === 'url'"
+    type="text"
+    id="videoURL"
+    name="videoURL"
+    [(ngModel)]="newProduct.videoURL"
+    placeholder="Ej: https://www.youtube.com/watch?v=ABC123 o https://youtu.be/ABC123"
+  />
+
+  <!-- Campo archivo -->
+  <input
+    *ngIf="videoMode === 'file'"
+    type="file"
+    accept="video/*"
+    (change)="onVideoSelected($event)"
+  />
+
+  <!-- Vista previa del video -->
+  <div class="video-preview" *ngIf="newProduct.videoURL">
+    <!-- Si es YouTube -->
+    <iframe 
+      *ngIf="newProduct.videoURL.includes('youtube') || newProduct.videoURL.includes('youtu.be')"
+      width="320" 
+      height="240" 
+      [src]="newProduct.videoURL | safeUrl"
+      frameborder="0"
+      allowfullscreen
+    ></iframe>
+    
+    <!-- Si es archivo local -->
+    <video 
+      *ngIf="!newProduct.videoURL.includes('youtube') && !newProduct.videoURL.includes('youtu.be')"
+      width="320" 
+      height="240" 
+      controls
+    >
+      <source [src]="newProduct.videoURL" type="video/mp4" />
+      Tu navegador no soporta video.
+    </video>
+  </div>
+</div>
+
+    <div class="form-group full-width">
+      <label for="featuresText">Características (una por línea):</label>
+      <textarea id="featuresText" name="featuresText" [(ngModel)]="newProduct.featuresText"></textarea>
+    </div>
+
+    <div class="form-group full-width">
+      <label for="tagsText">Etiquetas (separadas por coma):</label>
+      <textarea id="tagsText" name="tagsText" [(ngModel)]="newProduct.tagsText"></textarea>
+    </div>
+
+    <div class="form-group full-width">
+      <label>
+        <input type="checkbox" [(ngModel)]="newProduct.destacado" name="destacado" /> Destacado
+      </label>
+    </div>
+
+    <div class="form-group full-width">
+      <button type="submit">{{ editingProductId ? 'Actualizar Producto' : 'Agregar Producto' }}</button>
+      <button *ngIf="editingProductId" type="button" (click)="resetForm()">Cancelar Edición</button>
+    </div>
+  </form>
+
+  <!-- Campo de búsqueda -->
+  <div class="search-box">
+    <input type="text" [(ngModel)]="searchTerm" placeholder="Buscar por código o nombre..." />
+    <button type="button" (click)="buscar()">Buscar</button>
+  </div>
+
+  <!-- Listado de productos -->
+  <h2>Listado de Productos</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Código</th>
+        <th>Nombre</th>
+        <th>Categoría</th>
+        <th>Tipo</th>
+        <th>Stock</th>
+        <th>Imágenes</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let p of filteredProducts">
+        <td>{{ p.codigo }}</td>
+        <td>{{ p.name }}</td>
+        <td>{{ p.category }}</td>
+        <td>{{ p.estado }}</td>
+        <td>{{ p.stock }}</td>
+        <td>
+          <div class="thumbs">
+            <ng-container *ngFor="let img of [p.image, p.image1, p.image2, p.image3]">
+              <img *ngIf="img" [src]="img" width="60" class="me-1 border rounded" />
+            </ng-container>
+          </div>
+        </td>
+        <td>
+          <button class="btn-edit" (click)="editProduct(p)">Editar</button>
+          <button class="btn-delete" (click)="deleteProduct(p._id!)">Eliminar</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

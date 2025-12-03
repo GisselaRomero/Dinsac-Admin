@@ -1,0 +1,29 @@
+/* welcome.component.css o global si aplica */
+
+.layout-container {
+  display: flex;
+  width: 100%;
+  min-height: 100vh; /* Asegura que tome el alto total de la ventana */
+  margin: 0;
+  padding: 0;
+}
+
+.sidebar-container {
+  width: 25%;
+  background-color: #2c3e50;
+  box-sizing: border-box;
+  padding: 10px;
+  margin: 0;
+  position: fixed; /* Fijo en pantalla */
+  top: 0;
+  left: 0;
+  bottom: 0;
+  overflow-y: auto; /* Si el sidebar es más alto que la pantalla, habilita scroll */
+}
+
+.productos-container {
+  margin-left: 25%; /* Ocupa el espacio del sidebar */
+  width: 75%;
+  box-sizing: border-box;
+  padding: 20px;
+}

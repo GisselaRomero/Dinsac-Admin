@@ -1,0 +1,65 @@
+<div class="sidebar">
+  <div class="sidebar-header">
+    <h2>DINSAC</h2>
+  </div>
+
+  <nav class="nav">
+    <ul>
+      <li>
+        <a (click)="logClick('/welcome/inicio-dashboard')" routerLinkActive="active">
+          <i class="fas fa-chart-line"></i> Dashboard
+        </a>
+      </li>
+
+      <li>
+        <a (click)="logClick('/welcome/productos')" routerLinkActive="active">
+          <i class="fas fa-box"></i> Productos
+        </a>
+      </li>
+
+      <li>
+        <a (click)="logClick('/welcome/categorias')" routerLinkActive="active">
+          <i class="fas fa-tags"></i> Categorías
+        </a>
+      </li>
+
+      <li>
+        <a (click)="logClick('/welcome/reportes')" routerLinkActive="active">
+          <i class="fas fa-file-alt"></i> Reportes
+        </a>
+      </li>
+
+      <li>
+        <a (click)="logClick('/welcome/gestion-cotizaciones')" routerLinkActive="active">
+          <i class="fas fa-file-invoice"></i> Cotizaciones
+          <span *ngIf="totalPendientes > 0" class="badge">{{ totalPendientes }}</span>
+        </a>
+      </li>
+
+      <li>
+        <a (click)="logClick('/welcome/chat-admin-standalone')" routerLinkActive="active">
+          <i class="fas fa-comments"></i> Chat
+        </a>
+      </li>
+         <li>
+        <a (click)="logClick('/welcome/bannerofertas')" routerLinkActive="active">
+          <i class="fas fa-comments"></i> Banner Ofertas
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <div class="user-info">
+    <div class="user-avatar">
+      <i class="fas fa-user"></i>
+    </div>
+    <div class="user-name">Admin User</div>
+    <div class="user-role">Administrador</div>
+  </div>
+
+  <div class="logout-section">
+    <button (click)="logout()" class="logout-btn">
+      <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+    </button>
+  </div>
+</div>
