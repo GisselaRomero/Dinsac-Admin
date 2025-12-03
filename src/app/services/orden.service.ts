@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class OrdenService {
-  private apiUrl = 'http://localhost:3000/ordenes';
+  private apiUrl = 'https://backend-dinsac-hlf0.onrender.com/ordenes';
 
   constructor(private http: HttpClient) {}
 
