@@ -45,7 +45,7 @@ export class BannerofertasComponent {
     formData.append('image', this.selectedFile);
     formData.append('tipo', this.tipoBanner);
 
-    this.http.post('http://localhost:3000/banner', formData)
+    this.http.post('https://backend-dinsac-hlf0.onrender.com/banner', formData)
       .subscribe({
         next: (res: any) => {
           this.mensaje = `✅ Banner ${this.tipoBanner} subido correctamente.`;
