@@ -2,27 +2,39 @@
 
   <h2>📤 Subir Banner</h2>
   <p class="subtext">
-    Selecciona el tipo de banner y sube una imagen en formato JPG o PNG.
+    Selecciona el tipo de banner y sube una imagen en formato JPG o PNG (máximo 5MB).
   </p>
 
   <!-- Selector de tipo de banner -->
   <div class="banner-type">
     
-    <!-- Banner para página de Ofertas (individual) -->
     <label>
-      <input type="radio" name="tipoBanner" [(ngModel)]="tipoBanner" value="principal">
+      <input 
+        type="radio" 
+        name="tipoBanner" 
+        [(ngModel)]="tipoBanner" 
+        value="principal"
+        [disabled]="isLoading">
       🎯 Banner Principal (Página Ofertas)
     </label>
 
-    <!-- Banner para sección ofertas en Home (individual) -->
     <label>
-      <input type="radio" name="tipoBanner" [(ngModel)]="tipoBanner" value="ofertasHome">
+      <input 
+        type="radio" 
+        name="tipoBanner" 
+        [(ngModel)]="tipoBanner" 
+        value="ofertasHome"
+        [disabled]="isLoading">
       🏷️ Banner Ofertas Home
     </label>
 
-    <!-- Carrusel del Home (múltiple - hasta 3) -->
     <label>
-      <input type="radio" name="tipoBanner" [(ngModel)]="tipoBanner" value="carrusel">
+      <input 
+        type="radio" 
+        name="tipoBanner" 
+        [(ngModel)]="tipoBanner" 
+        value="carrusel"
+        [disabled]="isLoading">
       🎠 Carrusel Home (3 imágenes)
     </label>
 
@@ -41,27 +53,29 @@
     </p>
   </div>
 
-  <!-- ========== PARA BANNERS INDIVIDUALES (principal y ofertasHome) ========== -->
+  <!-- ========== BANNERS INDIVIDUALES ========== -->
   <div *ngIf="tipoBanner !== 'carrusel'">
     <input 
       type="file" 
       accept="image/*" 
       (change)="onFileSelected($event)" 
       class="file-input"
+      [disabled]="isLoading"
     />
 
-    <!-- Vista previa individual -->
     <div class="preview" *ngIf="previewUrl">
       <img [src]="previewUrl" alt="Vista previa">
     </div>
 
-    <!-- Botón de subir individual -->
-    <button class="btn-upload" (click)="subirBanner()" [disabled]="!selectedFile">
-      Subir Banner
+    <button 
+      class="btn-upload" 
+      (click)="subirBanner()" 
+      [disabled]="!selectedFile || isLoading">
+      {{ isLoading ? '⏳ Subiendo...' : 'Subir Banner' }}
     </button>
   </div>
 
-  <!-- ========== PARA CARRUSEL (3 INPUTS SEPARADOS) ========== -->
+  <!-- ========== CARRUSEL ========== -->
   <div *ngIf="tipoBanner === 'carrusel'" class="carrusel-upload">
     
     <!-- IMAGEN 1 -->
@@ -73,12 +87,18 @@
           accept="image/*" 
           (change)="onCarruselFileSelected($event, 0)" 
           class="file-input-carrusel"
+          [disabled]="isLoading"
         />
       </label>
       
       <div class="preview-carrusel" *ngIf="carruselPreviews[0]">
         <img [src]="carruselPreviews[0]" alt="Preview 1">
-        <button class="btn-remove-small" (click)="eliminarImagenCarrusel(0)">✕</button>
+        <button 
+          class="btn-remove-small" 
+          (click)="eliminarImagenCarrusel(0)"
+          [disabled]="isLoading">
+          ✕
+        </button>
       </div>
     </div>
 
@@ -91,12 +111,18 @@
           accept="image/*" 
           (change)="onCarruselFileSelected($event, 1)" 
           class="file-input-carrusel"
+          [disabled]="isLoading"
         />
       </label>
       
       <div class="preview-carrusel" *ngIf="carruselPreviews[1]">
         <img [src]="carruselPreviews[1]" alt="Preview 2">
-        <button class="btn-remove-small" (click)="eliminarImagenCarrusel(1)">✕</button>
+        <button 
+          class="btn-remove-small" 
+          (click)="eliminarImagenCarrusel(1)"
+          [disabled]="isLoading">
+          ✕
+        </button>
       </div>
     </div>
 
@@ -109,32 +135,42 @@
           accept="image/*" 
           (change)="onCarruselFileSelected($event, 2)" 
           class="file-input-carrusel"
+          [disabled]="isLoading"
         />
       </label>
       
       <div class="preview-carrusel" *ngIf="carruselPreviews[2]">
         <img [src]="carruselPreviews[2]" alt="Preview 3">
-        <button class="btn-remove-small" (click)="eliminarImagenCarrusel(2)">✕</button>
+        <button 
+          class="btn-remove-small" 
+          (click)="eliminarImagenCarrusel(2)"
+          [disabled]="isLoading">
+          ✕
+        </button>
       </div>
     </div>
 
-    <!-- Contador de imágenes seleccionadas -->
+    <!-- Contador -->
     <div class="file-count" *ngIf="contarImagenesCarrusel() > 0">
       <p>📊 {{contarImagenesCarrusel()}} de 3 imágenes seleccionadas</p>
     </div>
 
-    <!-- Botón de subir todas -->
+    <!-- Botón subir -->
     <button 
       class="btn-upload" 
       (click)="subirCarrusel()" 
-      [disabled]="contarImagenesCarrusel() === 0"
-    >
-      Subir {{contarImagenesCarrusel()}} imagen(es) al Carrusel
+      [disabled]="contarImagenesCarrusel() === 0 || isLoading">
+      {{ isLoading ? '⏳ Subiendo...' : 'Subir ' + contarImagenesCarrusel() + ' imagen(es) al Carrusel' }}
     </button>
   </div>
 
   <!-- Mensaje -->
-  <p class="mensaje" [class.success]="mensaje.includes('✅')" [class.error]="mensaje.includes('❌')" *ngIf="mensaje">
+  <p 
+    class="mensaje" 
+    [class.success]="mensaje.includes('✅')" 
+    [class.error]="mensaje.includes('❌')" 
+    [class.warning]="mensaje.includes('⚠️')"
+    *ngIf="mensaje">
     {{ mensaje }}
   </p>
 

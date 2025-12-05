@@ -31,5 +31,7 @@ export class LoginComponent {
         console.error('Error:', error);
       }
     );
+
   }
+  
 }

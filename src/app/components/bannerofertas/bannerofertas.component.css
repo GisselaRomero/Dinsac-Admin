@@ -1,354 +1,191 @@
 .banner-container {
   max-width: 900px;
-  margin: 40px auto;
-  padding: 30px;
+  margin: 2rem auto;
+  padding: 2rem;
   background: white;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.1);
 }
 
 h2 {
-  text-align: center;
   color: #333;
-  margin-bottom: 10px;
-  font-size: 28px;
+  margin-bottom: 0.5rem;
 }
 
 .subtext {
-  text-align: center;
   color: #666;
-  margin-bottom: 30px;
-  font-size: 14px;
+  margin-bottom: 2rem;
 }
 
-/* Radio buttons del tipo de banner */
 .banner-type {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 15px;
-  margin: 25px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
 }
 
 .banner-type label {
   display: flex;
   align-items: center;
-  padding: 15px 20px;
+  padding: 1rem;
   border: 2px solid #e0e0e0;
-  border-radius: 10px;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s;
-  background: #fafafa;
-  font-size: 15px;
-  font-weight: 500;
 }
 
 .banner-type label:hover {
-  border-color: #2196f3;
-  background: #f0f8ff;
-  transform: translateY(-2px);
+  border-color: #007bff;
+  background: #f8f9ff;
 }
 
 .banner-type input[type="radio"] {
-  margin-right: 12px;
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-  accent-color: #2196f3;
+  margin-right: 0.75rem;
 }
 
-.banner-type input[type="radio"]:checked + label,
-.banner-type label:has(input:checked) {
-  border-color: #2196f3;
-  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
-}
-
-/* Info box */
 .info-box {
-  background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
-  border-left: 4px solid #2196f3;
-  padding: 12px 18px;
-  margin: 20px 0;
-  border-radius: 8px;
+  padding: 1rem;
+  background: #e7f3ff;
+  border-left: 4px solid #007bff;
+  border-radius: 4px;
+  margin-bottom: 2rem;
 }
 
 .info-box p {
   margin: 0;
-  color: #1565c0;
-  font-size: 14px;
-  font-weight: 500;
+  color: #0056b3;
 }
 
-/* Banner individual */
 .file-input {
   display: block;
+  margin: 1rem 0;
+  padding: 0.75rem;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
   width: 100%;
-  padding: 15px;
-  margin: 20px 0;
-  border: 2px dashed #2196f3;
-  border-radius: 10px;
   cursor: pointer;
-  transition: all 0.3s;
-  background: #fafafa;
-  text-align: center;
-  font-size: 14px;
-  color: #666;
-}
-
-.file-input:hover {
-  border-color: #1976d2;
-  background: #f0f8ff;
-  transform: scale(1.01);
 }
 
 .preview {
-  margin: 20px 0;
+  margin: 1rem 0;
   text-align: center;
 }
 
 .preview img {
   max-width: 100%;
   max-height: 300px;
-  border-radius: 10px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-/* ========== CARRUSEL - GRID COMPACTO ========== */
+.btn-upload {
+  display: block;
+  width: 100%;
+  padding: 1rem;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.btn-upload:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+.btn-upload:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
 .carrusel-upload {
-  margin-top: 25px;
+  display: grid;
+  gap: 1.5rem;
 }
 
 .carrusel-item {
-  display: grid;
-  grid-template-columns: 120px 1fr;
-  gap: 15px;
-  align-items: start;
-  margin-bottom: 20px;
-  padding: 15px;
   border: 2px solid #e0e0e0;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-  transition: all 0.3s;
-}
-
-.carrusel-item:hover {
-  border-color: #2196f3;
-  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.1);
+  border-radius: 8px;
+  padding: 1rem;
 }
 
 .carrusel-label {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  display: block;
+  margin-bottom: 1rem;
+  font-weight: bold;
+  color: #333;
 }
 
 .carrusel-number {
-  display: inline-block;
-  font-weight: 600;
-  color: #2196f3;
-  font-size: 14px;
-  white-space: nowrap;
+  display: block;
+  margin-bottom: 0.5rem;
 }
 
 .file-input-carrusel {
   display: block;
   width: 100%;
-  padding: 8px;
-  border: 2px dashed #90caf9;
-  border-radius: 8px;
-  cursor: pointer;
-  background: white;
-  transition: all 0.3s;
-  font-size: 12px;
-  color: #666;
+  padding: 0.5rem;
 }
 
-.file-input-carrusel:hover {
-  border-color: #2196f3;
-  background: #e3f2fd;
-}
-
-.file-input-carrusel::-webkit-file-upload-button {
-  padding: 6px 12px;
-  border: none;
-  background: #2196f3;
-  color: white;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 11px;
-  margin-right: 8px;
-}
-
-.file-input-carrusel::-webkit-file-upload-button:hover {
-  background: #1976d2;
-}
-
-/* Vista previa compacta del carrusel */
 .preview-carrusel {
   position: relative;
-  width: 100%;
-  height: 100px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f5f5f5;
-  border-radius: 8px;
-  overflow: hidden;
+  margin-top: 1rem;
+  text-align: center;
 }
 
 .preview-carrusel img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  max-width: 100%;
+  max-height: 200px;
   border-radius: 8px;
 }
 
 .btn-remove-small {
   position: absolute;
-  top: 5px;
-  right: 5px;
-  background: rgba(244, 67, 54, 0.9);
+  top: 10px;
+  right: 10px;
+  background: rgba(255,0,0,0.8);
   color: white;
   border: none;
-  width: 28px;
-  height: 28px;
   border-radius: 50%;
+  width: 30px;
+  height: 30px;
   cursor: pointer;
-  font-size: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  font-size: 1.2rem;
 }
 
-.btn-remove-small:hover {
-  background: rgba(211, 47, 47, 1);
-  transform: scale(1.15);
-}
-
-/* Contador de imágenes */
 .file-count {
   text-align: center;
-  margin: 20px 0 15px;
-  padding: 12px;
-  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
-  border-radius: 10px;
-  border: 2px solid #4caf50;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  font-weight: bold;
 }
 
-.file-count p {
-  margin: 0;
-  color: #2e7d32;
-  font-weight: 700;
-  font-size: 15px;
-}
-
-/* Botón principal */
-.btn-upload {
-  display: block;
-  width: 100%;
-  padding: 16px;
-  background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
-  color: white;
-  border: none;
-  border-radius: 10px;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s;
-  margin-top: 25px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
-}
-
-.btn-upload:hover:not(:disabled) {
-  background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
-}
-
-.btn-upload:active:not(:disabled) {
-  transform: translateY(-1px);
-}
-
-.btn-upload:disabled {
-  background: linear-gradient(135deg, #e0e0e0 0%, #bdbdbd 100%);
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-  opacity: 0.6;
-}
-
-/* Mensajes */
 .mensaje {
-  margin-top: 25px;
-  padding: 16px 20px;
-  border-radius: 10px;
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 8px;
   text-align: center;
-  font-weight: 600;
-  font-size: 15px;
-  animation: slideIn 0.4s ease;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-15px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  font-weight: bold;
 }
 
 .mensaje.success {
-  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
-  color: #1b5e20;
-  border: 2px solid #4caf50;
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
 }
 
 .mensaje.error {
-  background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
-  color: #b71c1c;
-  border: 2px solid #f44336;
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .banner-container {
-    padding: 20px;
-    margin: 20px;
-  }
-
-  .banner-type {
-    grid-template-columns: 1fr;
-  }
-
-  .carrusel-item {
-    grid-template-columns: 100px 1fr;
-    gap: 10px;
-    padding: 12px;
-  }
-
-  .preview-carrusel {
-    height: 80px;
-  }
-
-  h2 {
-    font-size: 24px;
-  }
-}
-
-@media (max-width: 480px) {
-  .carrusel-item {
-    grid-template-columns: 1fr;
-  }
-
-  .preview-carrusel {
-    height: 150px;
-    margin-top: 10px;
-  }
+.mensaje.warning {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeaa7;
 }
