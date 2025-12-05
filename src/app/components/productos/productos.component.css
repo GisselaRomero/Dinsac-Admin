@@ -279,3 +279,34 @@ td button {
     width: 100%;
   }
 }
+
+
+
+.pagination {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  font-size: 16px;
+}
+
+.pagination button {
+  padding: 8px 14px;
+  background-color: #1a4d6c;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.25s;
+}
+
+.pagination button:disabled {
+  background-color: #9bb5c3;
+  cursor: not-allowed;
+}
+
+.pagination button:hover:not(:disabled) {
+  background-color: #368a91;
+}

@@ -75,6 +75,10 @@ categories = [
     { name: 'image2', label: 'Imagen 2', mode: 'url' },
     { name: 'image3', label: 'Imagen 3', mode: 'url' },
   ];
+  currentPage: number = 1;
+itemsPerPage: number = 5; // Cambia a 10 o 20 si quieres
+totalPages: number = 0;
+
 
   constructor(private productService: ProductService) {}
 
@@ -82,12 +86,24 @@ categories = [
     this.getAllProducts();
   }
 
-  getAllProducts() {
-    this.productService.getProducts().subscribe((data) => {
-      this.products = data;
-      this.filteredProducts = [...this.products];
-    });
-  }
+getAllProducts() {
+  this.productService.getProducts().subscribe((data) => {
+    this.products = data;
+    this.filteredProducts = [...this.products];
+    this.currentPage = 1;  // 🔥 volver a página 1 siempre
+    this.updatePagination();
+  });
+}
+
+updatePagination() {
+  this.totalPages = Math.ceil(this.filteredProducts.length / this.itemsPerPage);
+}
+get paginatedProducts() {
+  const start = (this.currentPage - 1) * this.itemsPerPage;
+  const end = start + this.itemsPerPage;
+  return this.filteredProducts.slice(start, end);
+}
+
 
   onFileSelected(event: any, fieldName: string) {
     const file = event.target.files?.[0];
@@ -145,19 +161,33 @@ createProduct() {
 }
 
 
-  editProduct(p: ProductExtended) {
-    this.newProduct = { ...p };
-    this.editingProductId = p._id || null;
-  }
+editProduct(p: ProductExtended) {
+  this.newProduct = { ...p };
+  this.editingProductId = p._id || null;
 
-  deleteProduct(id: string) {
-    if (confirm('¿Eliminar producto?')) {
-      this.productService.deleteProduct(id).subscribe(() => {
-        this.products = this.products.filter((p) => p._id !== id);
-        this.filteredProducts = [...this.products];
-      });
-    }
+  // Detecta si el video es base64 y cambia el modo
+  if (p.videoURL?.startsWith('data:video')) {
+    this.videoMode = 'file';
+  } else {
+    this.videoMode = 'url';
   }
+}
+
+
+deleteProduct(id: string) {
+  if (confirm('¿Eliminar producto?')) {
+    this.productService.deleteProduct(id).subscribe(() => {
+      this.products = this.products.filter((p) => p._id !== id);
+      this.filteredProducts = [...this.products];
+
+      this.currentPage = 1;  // 🔥 Para evitar que quede en página vacía
+      this.updatePagination(); // 🔥 Recalcular
+
+      alert("Producto eliminado");
+    });
+  }
+}
+
 
   resetForm() {
     this.newProduct = {
@@ -179,12 +209,20 @@ createProduct() {
     this.editingProductId = null;
   }
 
-  buscar() {
-    const term = this.searchTerm.toLowerCase();
-    this.filteredProducts = this.products.filter(
-      (p) => p.name.toLowerCase().includes(term) || p.codigo.toString().includes(term)
-    );
-  }
+buscar() {
+  const term = this.searchTerm.toLowerCase();
+
+  this.filteredProducts = this.products.filter(
+    (p) =>
+      p.name.toLowerCase().includes(term) ||
+      p.codigo.toString().includes(term)
+  );
+
+  this.currentPage = 1;
+  this.updatePagination();
+}
+
+
   videoMode: 'url' | 'file' = 'url'; // modo del video
 
 onVideoSelected(event: any) {
