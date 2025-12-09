@@ -53,7 +53,7 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
 
     // Escuchar mensajes
     this.socket.on('mensaje', (msg: Mensaje) => {
-      console.log('📩 Mensaje recibido:', msg);
+      console.log('📩 Mensaje recibido por admin:', msg);
 
       // Asignar nombre si es cliente
       if (msg.remitente === 'cliente' && msg.clienteId) {
@@ -63,14 +63,19 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
 
       // Agregar al chat activo si corresponde
       if (msg.clienteId === this.clienteSeleccionado) {
+        // ✅ MEJORADO: Comparación más flexible para evitar duplicados
         const existe = this.mensajes.some(
           m => m.mensaje === msg.mensaje &&
-               m.fecha === msg.fecha &&
-               m.remitente === msg.remitente
+               m.remitente === msg.remitente &&
+               Math.abs(new Date(m.fecha || '').getTime() - new Date(msg.fecha || '').getTime()) < 2000
         );
+        
         if (!existe) {
           this.mensajes.push(msg);
+          console.log('✅ Mensaje agregado al chat activo');
           setTimeout(() => this.scrollToBottom(), 100);
+        } else {
+          console.log('⚠️ Mensaje duplicado detectado, no se agrega');
         }
       } else {
         // Incrementar notificaciones si el cliente no está seleccionado
@@ -78,6 +83,18 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
         if (cliente && msg.remitente === 'cliente') {
           cliente.notificaciones = (cliente.notificaciones || 0) + 1;
           cliente.ultimoMensaje = msg.mensaje;
+          console.log(`🔔 Notificación para ${cliente.nombre}`);
+        }
+
+        // ✅ NUEVO: Si es un cliente nuevo, agregarlo a la lista
+        if (!cliente && msg.remitente === 'cliente' && msg.clienteId) {
+          this.clientes.push({
+            id: msg.clienteId,
+            nombre: msg.nombre || `Cliente ${msg.clienteId.substring(0, 8)}`,
+            notificaciones: 1,
+            ultimoMensaje: msg.mensaje
+          });
+          console.log('✅ Nuevo cliente agregado:', msg.clienteId);
         }
       }
     });
@@ -110,7 +127,7 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
               });
             }
           });
-          console.log('✅ Clientes cargados:', this.clientes);
+          console.log('✅ Clientes cargados:', this.clientes.length);
         },
         error: (err) => {
           console.error('❌ Error cargando clientes:', err);
@@ -120,6 +137,7 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
   }
 
   seleccionarCliente(clienteId: string): void {
+    console.log('👤 Seleccionando cliente:', clienteId);
     this.clienteSeleccionado = clienteId;
     this.mensajes = [];
 
@@ -132,7 +150,9 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
           const cliente = this.clientes.find(c => c.id === clienteId);
           this.mensajes = res.map(m => ({
             ...m,
-            nombre: cliente?.nombre || 'Cliente'
+            nombre: m.remitente === 'cliente' 
+              ? (cliente?.nombre || 'Cliente')
+              : 'Soporte DINSAC'
           }));
           setTimeout(() => this.scrollToBottom(), 100);
           console.log('✅ Historial cargado:', res.length, 'mensajes');
@@ -152,8 +172,14 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
       fecha: new Date().toISOString()
     };
 
-    this.socket.emit('mensaje', msg);
+    console.log('📤 Admin enviando mensaje:', msg);
+    
+    // Agregar inmediatamente al chat local
     this.mensajes.push(msg);
+    
+    // Emitir por socket
+    this.socket.emit('mensaje', msg);
+    
     this.mensajeEscrito = '';
     setTimeout(() => this.scrollToBottom(), 100);
   }
@@ -192,12 +218,14 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
     const clienteNombre = this.getClienteNombre();
     if (!confirm(`¿Estás seguro de eliminar toda la conversación con ${clienteNombre}?`)) return;
 
-    this.http.delete(`https://backend-dinsac-hlf0.onrender.com/chats/${this.clienteSeleccionado}`)
+    const clienteIdAEliminar = this.clienteSeleccionado;
+
+    this.http.delete(`https://backend-dinsac-hlf0.onrender.com/chats/${clienteIdAEliminar}`)
       .subscribe({
         next: () => {
           this.mensajes = [];
           this.clienteSeleccionado = null;
-          this.clientes = this.clientes.filter(c => c.id !== this.clienteSeleccionado);
+          this.clientes = this.clientes.filter(c => c.id !== clienteIdAEliminar);
           alert('Conversación eliminada correctamente');
         },
         error: (err) => {
@@ -232,5 +260,37 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
 
   abrirSelector() {
     document.getElementById('fileInput')?.click();
+  }
+
+  // 📄 Detectar si es un archivo
+  esArchivo(mensaje: string): boolean {
+    return mensaje.includes('https://backend-dinsac-hlf0.onrender.com/uploads/');
+  }
+
+  // 📝 Obtener nombre del archivo
+  obtenerNombreArchivo(url: string): string {
+    const partes = url.split('/');
+    const nombreCompleto = partes[partes.length - 1];
+    
+    // Remover timestamp y decodificar
+    const nombreSinTimestamp = nombreCompleto.substring(nombreCompleto.indexOf('-') + 1);
+    return decodeURIComponent(nombreSinTimestamp);
+  }
+
+  // 📎 Obtener extensión del archivo
+  obtenerExtension(url: string): string {
+    const extension = url.split('.').pop()?.toLowerCase() || '';
+    return extension;
+  }
+
+  // 🖼️ Verificar si es imagen
+  esImagen(url: string): boolean {
+    const ext = this.obtenerExtension(url);
+    return ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
+  }
+
+  // 📄 Verificar si es PDF
+  esPDF(url: string): boolean {
+    return this.obtenerExtension(url) === 'pdf';
   }
 }
