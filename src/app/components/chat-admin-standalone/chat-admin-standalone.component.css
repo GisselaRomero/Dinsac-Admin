@@ -414,4 +414,58 @@
 .mensajes::-webkit-scrollbar-thumb:hover,
 .clientes-lista::-webkit-scrollbar-thumb:hover {
   background: #95a5a6;
+}.mensaje-nombre {
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  margin: 0 0 5px 0;
+}
+
+.pdf-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f0f2f5;
+  padding: 12px;
+  border-radius: 8px;
+  max-width: 300px;
+}
+
+.pdf-icon {
+  font-size: 32px;
+}
+
+.pdf-info {
+  flex: 1;
+}
+
+.pdf-nombre {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #111;
+  word-break: break-word;
+}
+
+.btn-descargar-pdf {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  background: #25d366;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-descargar-pdf:hover {
+  background: #20ba5a;
+}
+
+.mensaje-texto {
+  margin: 0;
 }

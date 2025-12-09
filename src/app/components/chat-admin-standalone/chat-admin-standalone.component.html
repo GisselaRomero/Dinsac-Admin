@@ -61,6 +61,7 @@
            [class]="'mensaje ' + (msg.remitente === 'admin' ? 'mensaje-admin' : 'mensaje-cliente')">
         
         <div class="mensaje-contenido">
+          <!-- 👤 Mostrar nombre del remitente -->
           <p class="mensaje-nombre" *ngIf="msg.remitente === 'cliente'">
             {{ msg.nombre || 'Cliente' }}
           </p>
@@ -76,14 +77,16 @@
               </a>
             </div>
 
-            <!-- 📄 Si es PDF -->
+            <!-- 📄 Si es PDF (estilo WhatsApp) -->
             <div *ngIf="esPDF(msg.mensaje)" class="pdf-preview">
               <div class="pdf-icon">📄</div>
               <div class="pdf-info">
                 <p class="pdf-nombre">{{ obtenerNombreArchivo(msg.mensaje) }}</p>
-                <a [href]="msg.mensaje" target="_blank" class="btn-abrir-pdf">
-                  Abrir PDF
-                </a>
+                <button 
+                  class="btn-descargar-pdf" 
+                  (click)="descargarPDF(msg.mensaje, obtenerNombreArchivo(msg.mensaje))">
+                  ⬇️ Descargar
+                </button>
               </div>
             </div>
           </div>

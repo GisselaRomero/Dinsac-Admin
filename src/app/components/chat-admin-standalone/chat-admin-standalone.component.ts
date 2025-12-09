@@ -58,12 +58,11 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
       // Asignar nombre si es cliente
       if (msg.remitente === 'cliente' && msg.clienteId) {
         const cliente = this.clientes.find(c => c.id === msg.clienteId);
-        msg.nombre = cliente ? cliente.nombre : 'Cliente';
+        msg.nombre = cliente ? cliente.nombre : msg.nombre || 'Cliente';
       }
 
       // Agregar al chat activo si corresponde
       if (msg.clienteId === this.clienteSeleccionado) {
-        // ✅ MEJORADO: Comparación más flexible para evitar duplicados
         const existe = this.mensajes.some(
           m => m.mensaje === msg.mensaje &&
                m.remitente === msg.remitente &&
@@ -86,7 +85,7 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
           console.log(`🔔 Notificación para ${cliente.nombre}`);
         }
 
-        // ✅ NUEVO: Si es un cliente nuevo, agregarlo a la lista
+        // Si es un cliente nuevo, agregarlo a la lista
         if (!cliente && msg.remitente === 'cliente' && msg.clienteId) {
           this.clientes.push({
             id: msg.clienteId,
@@ -151,7 +150,7 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
           this.mensajes = res.map(m => ({
             ...m,
             nombre: m.remitente === 'cliente' 
-              ? (cliente?.nombre || 'Cliente')
+              ? (m.nombre || cliente?.nombre || 'Cliente')
               : 'Soporte DINSAC'
           }));
           setTimeout(() => this.scrollToBottom(), 100);
@@ -174,10 +173,7 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
 
     console.log('📤 Admin enviando mensaje:', msg);
     
-    // Agregar inmediatamente al chat local
     this.mensajes.push(msg);
-    
-    // Emitir por socket
     this.socket.emit('mensaje', msg);
     
     this.mensajeEscrito = '';
@@ -195,6 +191,8 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
     this.http.post('https://backend-dinsac-hlf0.onrender.com/upload-chat', formData)
       .subscribe({
         next: (res: any) => {
+          console.log('✅ Archivo subido:', res);
+
           const nuevoMensaje: Mensaje = {
             remitente: 'admin',
             mensaje: res.url,
@@ -206,7 +204,10 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
           this.socket.emit('mensaje', nuevoMensaje);
           setTimeout(() => this.scrollToBottom(), 100);
         },
-        error: err => console.error('❌ Error al subir archivo:', err)
+        error: err => {
+          console.error('❌ Error al subir archivo:', err);
+          alert('Error al subir archivo');
+        }
       });
 
     event.target.value = '';
@@ -292,5 +293,25 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
   // 📄 Verificar si es PDF
   esPDF(url: string): boolean {
     return this.obtenerExtension(url) === 'pdf';
+  }
+
+  // ✅ NUEVA FUNCIÓN: Descargar PDF
+  descargarPDF(url: string, nombre: string): void {
+    this.http.get(url, { responseType: 'blob' })
+      .subscribe({
+        next: (blob) => {
+          const link = document.createElement('a');
+          link.href = window.URL.createObjectURL(blob);
+          link.download = nombre;
+          link.click();
+          window.URL.revokeObjectURL(link.href);
+          console.log('✅ PDF descargado:', nombre);
+        },
+        error: (err) => {
+          console.error('❌ Error descargando PDF:', err);
+          // Fallback: abrir en nueva pestaña
+          window.open(url, '_blank');
+        }
+      });
   }
 }
