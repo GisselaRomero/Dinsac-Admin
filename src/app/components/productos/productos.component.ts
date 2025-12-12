@@ -252,6 +252,12 @@ export class ProductosComponent implements OnInit {
       const val = this.newProduct[field.name];
       field.mode = val && val.startsWith('data:image') ? 'file' : 'url';
     });
+    // Subir automáticamente al inicio
+setTimeout(() => {
+  const formElement = document.getElementById('formInicio');
+  formElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}, 50);
+
   }
 
   deleteProduct(id: string) {

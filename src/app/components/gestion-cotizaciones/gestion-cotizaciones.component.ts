@@ -51,6 +51,16 @@ export class GestionCotizacionesComponent implements OnInit {
   enProceso = 0;
   completadas = 0;
   canceladas = 0;
+cotizacionesPaginadas: Cotizacion[] = [];
+
+
+  // 🔵 Paginación
+paginaActual: number = 1;
+itemsPorPagina: number = 10; // Puedes cambiarlo si quieres
+totalPaginas: number = 1;
+paginasArray: number[] = [];
+
+
 
   private readonly API_URL = 'https://backend-dinsac-hlf0.onrender.com';
 
@@ -78,6 +88,8 @@ export class GestionCotizacionesComponent implements OnInit {
         this.cotizaciones = Array.isArray(res) ? res : (res.data || []);
         this.cotizacionesFiltradas = [...this.cotizaciones];
         this.calcularEstadisticas();
+          this.actualizarPaginacion(); // 👈 PAGINAR LOS DATOS CARGADOS
+
         
         console.log('📋 Cotizaciones cargadas:', this.cotizaciones.length);
       });
@@ -91,28 +103,38 @@ export class GestionCotizacionesComponent implements OnInit {
     this.canceladas = this.cotizacionesFiltradas.filter(c => c.estado === 'cancelada').length;
   }
 
-  aplicarFiltros(): void {
-    let resultado = [...this.cotizaciones];
+aplicarFiltros(): void {
+  let resultado = [...this.cotizaciones];
 
-    // Filtrar por estado
-    if (this.filtroEstado !== 'todos') {
-      resultado = resultado.filter(c => c.estado === this.filtroEstado);
-    }
-
-    // Filtrar por búsqueda (nombre, email, número)
-    if (this.filtroBusqueda.trim()) {
-      const busqueda = this.filtroBusqueda.toLowerCase();
-      resultado = resultado.filter(c => 
-        c.nombre?.toLowerCase().includes(busqueda) ||
-        c.email?.toLowerCase().includes(busqueda) ||
-        c.numeroCotizacion?.toLowerCase().includes(busqueda) ||
-        c.dniRuc?.includes(busqueda)
-      );
-    }
-
-    this.cotizacionesFiltradas = resultado;
-    this.calcularEstadisticas();
+  // Filtrar por estado
+  if (this.filtroEstado !== 'todos') {
+    resultado = resultado.filter(c => c.estado === this.filtroEstado);
   }
+
+  // Filtrar por búsqueda
+  if (this.filtroBusqueda.trim()) {
+    const busqueda = this.filtroBusqueda.toLowerCase();
+    resultado = resultado.filter(c =>
+      c.nombre?.toLowerCase().includes(busqueda) ||
+      c.email?.toLowerCase().includes(busqueda) ||
+      c.numeroCotizacion?.toLowerCase().includes(busqueda) ||
+      c.dniRuc?.includes(busqueda)
+    );
+  }
+
+  this.cotizacionesFiltradas = resultado;
+  this.calcularEstadisticas();
+
+  this.paginaActual = 1; // Resetear a la primera página
+  this.actualizarPaginacion();
+}
+
+
+cambiarPagina(num: number) {
+  this.paginaActual = num;
+  this.actualizarPaginacion();
+}
+
 
   limpiarFiltros(): void {
     this.filtroEstado = 'todos';
@@ -242,4 +264,20 @@ export class GestionCotizacionesComponent implements OnInit {
   getNombreProducto(producto: Producto): string {
     return producto.nombre || producto.equipo || producto.categoria || 'Producto';
   }
+
+
+actualizarPaginacion(): void {
+  this.totalPaginas = Math.ceil(this.cotizacionesFiltradas.length / this.itemsPorPagina);
+  this.paginaActual = Math.min(this.paginaActual, this.totalPaginas || 1);
+
+  this.paginasArray = Array.from({ length: this.totalPaginas }, (_, i) => i + 1);
+
+  const inicio = (this.paginaActual - 1) * this.itemsPorPagina;
+  const fin = inicio + this.itemsPorPagina;
+
+  // 👉 Aquí ya NO sobrescribes cotizacionesFiltradas
+  this.cotizacionesPaginadas = this.cotizacionesFiltradas.slice(inicio, fin);
+}
+
+
 }

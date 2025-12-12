@@ -94,7 +94,7 @@
       </thead>
 
       <tbody>
-        <tr *ngFor="let cot of cotizacionesFiltradas" class="fila-cotizacion">
+<tr *ngFor="let cot of cotizacionesPaginadas" class="fila-cotizacion">
           <!-- N° Cotización -->
           <td class="col-numero">
             <span class="numero-cot">{{ cot.numeroCotizacion || 'N/A' }}</span>
@@ -202,5 +202,30 @@
       </tbody>
     </table>
   </div>
+  <!-- PAGINACIÓN -->
+<div class="paginacion" *ngIf="totalPaginas > 1">
+  <button 
+    class="page-btn" 
+    [disabled]="paginaActual === 1"
+    (click)="cambiarPagina(paginaActual - 1)">
+    ⬅️ Anterior
+  </button>
+
+  <button 
+    *ngFor="let p of paginasArray"
+    class="page-number"
+    [class.active]="p === paginaActual"
+    (click)="cambiarPagina(p)">
+    {{ p }}
+  </button>
+
+  <button 
+    class="page-btn" 
+    [disabled]="paginaActual === totalPaginas"
+    (click)="cambiarPagina(paginaActual + 1)">
+    Siguiente ➡️
+  </button>
+</div>
+
 </div>
 

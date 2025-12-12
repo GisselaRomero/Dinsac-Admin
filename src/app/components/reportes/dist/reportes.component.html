@@ -144,6 +144,19 @@
         </tr>
       </tbody>
     </table>
+
   </div>
+  <!-- PAGINACIÓN -->
+<div class="paginacion">
+  <button (click)="paginaAnterior()" [disabled]="paginaActual === 1">
+    ⬅ Anterior
+  </button>
+
+  <span>Página {{ paginaActual }} de {{ totalPaginas }}</span>
+
+  <button (click)="paginaSiguiente()" [disabled]="paginaActual === totalPaginas">
+    Siguiente ➡
+  </button>
+</div>
+
 </section>
-*/

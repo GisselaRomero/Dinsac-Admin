@@ -72,6 +72,9 @@ export class ReportesComponent implements OnInit {
         }));
         this.cotizacionesFiltradas = [...this.cotizaciones];
         this.calcularEstadisticas();
+        this.totalPaginas = Math.ceil(this.cotizaciones.length / this.itemsPorPagina);
+this.cotizacionesFiltradas = this.cotizaciones.slice(0, this.itemsPorPagina);
+
       },
       error: (err) => {
         console.error('Error al cargar cotizaciones:', err);
@@ -87,6 +90,7 @@ export class ReportesComponent implements OnInit {
     this.cotizacionesAtendidas = this.cotizacionesFiltradas.filter(c => c.estado === 'atendida' || c.estado === 'completada').length;
     this.cotizacionesCanceladas = this.cotizacionesFiltradas.filter(c => c.estado === 'cancelada').length;
   }
+  
 
   filtrarCotizaciones() {
     let resultado = [...this.cotizaciones];
@@ -111,13 +115,7 @@ export class ReportesComponent implements OnInit {
     this.calcularEstadisticas();
   }
 
-  limpiarFiltros() {
-    this.fechaInicio = null;
-    this.fechaFin = null;
-    this.estadoFiltro = 'todos';
-    this.cotizacionesFiltradas = [...this.cotizaciones];
-    this.calcularEstadisticas();
-  }
+limpiarFiltros
 
   exportarPDF() {
     const doc = new jsPDF();
@@ -232,4 +230,68 @@ export class ReportesComponent implements OnInit {
     };
     return colores[estado] || '#6b7280';
   }
+
+
+  // Paginación
+paginaActual = 1;
+itemsPorPagina = 10;
+totalPaginas = 1;
+
+actualizarPaginacion() {
+  this.totalPaginas = Math.ceil(this.cotizacionesFiltradas.length / this.itemsPorPagina);
+
+  const inicio = (this.paginaActual - 1) * this.itemsPorPagina;
+  const fin = inicio + this.itemsPorPagina;
+
+  this.cotizacionesFiltradas = [...this.cotizaciones].slice(inicio, fin);
+}
+
+paginaAnterior() {
+  if (this.paginaActual > 1) {
+    this.paginaActual--;
+    this.aplicarFiltrosConPaginacion();
+  }
+}
+
+paginaSiguiente() {
+  if (this.paginaActual < this.totalPaginas) {
+    this.paginaActual++;
+    this.aplicarFiltrosConPaginacion();
+  }
+}
+
+aplicarFiltrosConPaginacion() {
+  let resultado = [...this.cotizaciones];
+
+  // Reutilizamos tus filtros actuales
+  if (this.fechaInicio && this.fechaFin) {
+    const inicio = new Date(this.fechaInicio).setHours(0, 0, 0, 0);
+    const fin = new Date(this.fechaFin).setHours(23, 59, 59, 999);
+    resultado = resultado.filter(c => {
+      const fecha = new Date(c.fecha).getTime();
+      return fecha >= inicio && fecha <= fin;
+    });
+  }
+
+  if (this.estadoFiltro !== 'todos') {
+    resultado = resultado.filter(c => c.estado === this.estadoFiltro);
+  }
+
+  // Reemplazamos filtradas
+  this.cotizacionesFiltradas = resultado;
+
+  // Reiniciar a página 1
+  this.paginaActual = 1;
+
+  // Aplicar paginación final
+  this.totalPaginas = Math.ceil(this.cotizacionesFiltradas.length / this.itemsPorPagina);
+
+  const inicio = (this.paginaActual - 1) * this.itemsPorPagina;
+  const fin = inicio + this.itemsPorPagina;
+
+  this.cotizacionesFiltradas = this.cotizacionesFiltradas.slice(inicio, fin);
+
+  this.calcularEstadisticas();
+}
+
 }
