@@ -86,6 +86,25 @@
         <option value="Oferta">Oferta</option>
       </select>
     </div>
+<!-- SOLO CUANDO ES OFERTA: Mostrar campo adicional -->
+<div class="form-group" *ngIf="newProduct.estado === 'Oferta'">
+  <label for="precioReal">Precio Real (S/):</label>
+  <input 
+    id="precioReal"
+    type="number"
+    name="precioReal"
+    [(ngModel)]="precioReal"
+    step="0.01"
+    min="0"
+    placeholder="Ej: 799.00"
+  />
+  <small style="color:#777">
+    *Este valor solo se muestra, no se registra en la BD.
+  </small>
+</div>
+
+
+
     <div class="form-group">
   <label for="description">Descripción:</label>
   <textarea 

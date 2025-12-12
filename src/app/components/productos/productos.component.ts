@@ -24,6 +24,8 @@ export class ProductosComponent implements OnInit {
   filteredProducts: ProductExtended[] = [];
   searchTerm: string = '';
   editingProductId: string | null = null;
+  precioReal: number | null = null;
+
 
   categories = [
     'Agroindustria',
