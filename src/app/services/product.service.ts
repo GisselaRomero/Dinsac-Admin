@@ -13,7 +13,9 @@ export interface Product {
   image2?: string;
   image3?: string;
   stock: number;
-  category: string;
+  price: number;
+  precioReal?: number | null; 
+    category: string;
   estado: string;
   videoURL?: string;
   featuresText?: string;

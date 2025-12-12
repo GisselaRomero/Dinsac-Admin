@@ -18,19 +18,53 @@
       <label for="stock">Stock:</label>
       <input id="stock" type="number" name="stock" [(ngModel)]="newProduct.stock" required />
     </div>
-    <div class="form-group">
-  <label for="price">Precio (S/):</label>
-  <input 
-    id="price" 
-    type="number" 
-    name="price" 
-    [(ngModel)]="newProduct.price" 
-    step="0.01" 
-    min="0" 
-    required
-  />
-</div>
 
+    <!-- ✅ Tipo de producto (mover ANTES del precio) -->
+    <div class="form-group">
+      <label for="estado">Tipo de producto:</label>
+      <select id="estado" name="estado" [(ngModel)]="newProduct.estado" required>
+        <option value="" disabled selected>Selecciona el tipo</option>
+        <option value="Normal">Normal</option>
+        <option value="Oferta">Oferta</option>
+      </select>
+    </div>
+
+    <!-- ✅ PRECIO REAL (solo para ofertas) -->
+    <div class="form-group" *ngIf="newProduct.estado === 'Oferta'">
+      <label for="precioReal">💰 Precio Real / Antes (S/):</label>
+      <input 
+        id="precioReal"
+        type="number"
+        name="precioReal"
+        [(ngModel)]="precioReal"
+        step="0.01"
+        min="0"
+        placeholder="Ej: 799.00"
+        required
+      />
+      <small style="color:#666; display: block; margin-top: 5px;">
+        *Este es el precio original antes del descuento (se guardará en la BD)
+      </small>
+    </div>
+
+    <!-- ✅ PRECIO PRINCIPAL -->
+    <div class="form-group">
+      <label for="price">
+        {{ newProduct.estado === 'Oferta' ? '🔥 Precio de Oferta (S/):' : 'Precio (S/):' }}
+      </label>
+      <input 
+        id="price" 
+        type="number" 
+        name="price" 
+        [(ngModel)]="newProduct.price" 
+        step="0.01" 
+        min="0" 
+        required
+      />
+      <small *ngIf="newProduct.estado === 'Oferta'" style="color:#666; display: block; margin-top: 5px;">
+        *Este es el precio rebajado que pagará el cliente
+      </small>
+    </div>
 
     <!-- === Sección de imágenes === -->
     <div *ngFor="let imgField of imageFields" class="form-group">
@@ -77,102 +111,73 @@
       </select>
     </div>
 
-    <!-- ✅ Tipo de producto -->
     <div class="form-group">
-      <label for="estado">Tipo de producto:</label>
-      <select id="estado" name="estado" [(ngModel)]="newProduct.estado" required>
-        <option value="" disabled selected>Selecciona el tipo</option>
-        <option value="Normal">Normal</option>
-        <option value="Oferta">Oferta</option>
-      </select>
+      <label for="description">Descripción:</label>
+      <textarea 
+        id="description" 
+        name="description" 
+        [(ngModel)]="newProduct.description" 
+        required
+        rows="4"
+      ></textarea>
     </div>
-<!-- SOLO CUANDO ES OFERTA: Mostrar campo adicional -->
-<div class="form-group" *ngIf="newProduct.estado === 'Oferta'">
-  <label for="precioReal">Precio Real (S/):</label>
-  <input 
-    id="precioReal"
-    type="number"
-    name="precioReal"
-    [(ngModel)]="precioReal"
-    step="0.01"
-    min="0"
-    placeholder="Ej: 799.00"
-  />
-  <small style="color:#777">
-    *Este valor solo se muestra, no se registra en la BD.
-  </small>
-</div>
-
-
-
-    <div class="form-group">
-  <label for="description">Descripción:</label>
-  <textarea 
-    id="description" 
-    name="description" 
-    [(ngModel)]="newProduct.description" 
-    required
-    rows="4"
-  ></textarea>
-</div>
 
     <!-- === Sección de video === -->
-<!-- === Sección de video === -->
-<div class="form-group">
-  <label for="video">Video del producto:</label>
+    <div class="form-group">
+      <label for="video">Video del producto:</label>
 
-  <!-- Selector de modo -->
-  <div class="image-mode-toggle">
-    <label>
-      <input type="radio" name="videoMode" value="url" [(ngModel)]="videoMode" /> URL de YouTube
-    </label>
-    <label>
-      <input type="radio" name="videoMode" value="file" [(ngModel)]="videoMode" /> Archivo (⚠️ Max 5MB)
-    </label>
-  </div>
+      <!-- Selector de modo -->
+      <div class="image-mode-toggle">
+        <label>
+          <input type="radio" name="videoMode" value="url" [(ngModel)]="videoMode" /> URL de YouTube
+        </label>
+        <label>
+          <input type="radio" name="videoMode" value="file" [(ngModel)]="videoMode" /> Archivo (⚠️ Max 5MB)
+        </label>
+      </div>
 
-  <!-- Campo URL -->
-  <input
-    *ngIf="videoMode === 'url'"
-    type="text"
-    id="videoURL"
-    name="videoURL"
-    [(ngModel)]="newProduct.videoURL"
-    placeholder="Ej: https://www.youtube.com/watch?v=ABC123 o https://youtu.be/ABC123"
-  />
+      <!-- Campo URL -->
+      <input
+        *ngIf="videoMode === 'url'"
+        type="text"
+        id="videoURL"
+        name="videoURL"
+        [(ngModel)]="newProduct.videoURL"
+        placeholder="Ej: https://www.youtube.com/watch?v=ABC123 o https://youtu.be/ABC123"
+      />
 
-  <!-- Campo archivo -->
-  <input
-    *ngIf="videoMode === 'file'"
-    type="file"
-    accept="video/*"
-    (change)="onVideoSelected($event)"
-  />
+      <!-- Campo archivo -->
+      <input
+        *ngIf="videoMode === 'file'"
+        type="file"
+        accept="video/*"
+        (change)="onVideoSelected($event)"
+      />
 
-  <!-- Vista previa del video -->
-  <div class="video-preview" *ngIf="newProduct.videoURL">
-    <!-- Si es YouTube -->
-    <iframe 
-      *ngIf="newProduct.videoURL.includes('youtube') || newProduct.videoURL.includes('youtu.be')"
-      width="320" 
-      height="240" 
-      [src]="newProduct.videoURL | safeUrl"
-      frameborder="0"
-      allowfullscreen
-    ></iframe>
-    
-    <!-- Si es archivo local -->
-    <video 
-      *ngIf="!newProduct.videoURL.includes('youtube') && !newProduct.videoURL.includes('youtu.be')"
-      width="320" 
-      height="240" 
-      controls
-    >
-      <source [src]="newProduct.videoURL" type="video/mp4" />
-      Tu navegador no soporta video.
-    </video>
-  </div>
-</div>
+      <!-- Vista previa del video -->
+      <div class="video-preview" *ngIf="newProduct.videoURL">
+        <!-- Si es YouTube -->
+        <iframe 
+          *ngIf="newProduct.videoURL.includes('youtube') || newProduct.videoURL.includes('youtu.be')"
+          width="320" 
+          height="240" 
+          [src]="newProduct.videoURL | safeUrl"
+          frameborder="0"
+          allowfullscreen
+        ></iframe>
+        
+        <!-- Si es archivo local -->
+        <video 
+          *ngIf="!newProduct.videoURL.includes('youtube') && !newProduct.videoURL.includes('youtu.be')"
+          width="320" 
+          height="240" 
+          controls
+        >
+          <source [src]="newProduct.videoURL" type="video/mp4" />
+          Tu navegador no soporta video.
+        </video>
+      </div>
+    </div>
 
     <div class="form-group full-width">
       <label for="featuresText">Características (una por línea):</label>
@@ -218,13 +223,29 @@
       </tr>
     </thead>
     <tbody>
-<tr *ngFor="let p of paginatedProducts">
+      <tr *ngFor="let p of paginatedProducts">
         <td>{{ p.codigo }}</td>
         <td>{{ p.name }}</td>
         <td>{{ p.category }}</td>
         <td>{{ p.estado }}</td>
         <td>{{ p.stock }}</td>
-        <td>S/ {{ p.price | number:'1.2-2' }}</td>
+        <td>
+          <!-- Si es oferta: mostrar precio real tachado -->
+          <div *ngIf="p.estado === 'Oferta' && p.precioReal; else precioNormal">
+            <span class="precio-tachado">
+              S/ {{ p.precioReal | number:'1.2-2' }}
+            </span>
+            <br>
+            <span class="precio-oferta">
+              S/ {{ p.price | number:'1.2-2' }}
+            </span>
+          </div>
+
+          <!-- Si NO es oferta -->
+          <ng-template #precioNormal>
+            <span>S/ {{ p.price | number:'1.2-2' }}</span>
+          </ng-template>
+        </td>
         <td>
           <div class="thumbs">
             <ng-container *ngFor="let img of [p.image, p.image1, p.image2, p.image3]">
@@ -240,19 +261,18 @@
     </tbody>
   </table>
   <div class="pagination">
-  <button 
-    (click)="currentPage = currentPage - 1" 
-    [disabled]="currentPage === 1">
-    ◀ Anterior
-  </button>
+    <button 
+      (click)="currentPage = currentPage - 1" 
+      [disabled]="currentPage === 1">
+      ◀ Anterior
+    </button>
 
-  <span>Página {{ currentPage }} de {{ totalPages }}</span>
+    <span>Página {{ currentPage }} de {{ totalPages }}</span>
 
-  <button 
-    (click)="currentPage = currentPage + 1" 
-    [disabled]="currentPage === totalPages">
-    Siguiente ▶
-  </button>
-</div>
-
+    <button 
+      (click)="currentPage = currentPage + 1" 
+      [disabled]="currentPage === totalPages">
+      Siguiente ▶
+    </button>
+  </div>
 </div>
