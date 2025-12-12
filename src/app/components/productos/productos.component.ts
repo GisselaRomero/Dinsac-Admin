@@ -136,8 +136,11 @@ export class ProductosComponent implements OnInit {
 
     // VALIDACIÓN ESPECÍFICA PARA OFERTAS
     if (this.newProduct.estado === 'Oferta') {
-      if (this.precioReal === null || this.precioReal <= 0) {
-        alert('⚠️ Debes ingresar un precio real válido para las ofertas');
+      console.log('🔍 Validando oferta - precioReal:', this.precioReal);
+      console.log('🔍 Validando oferta - price:', this.newProduct.price);
+      
+      if (this.precioReal === null || this.precioReal === undefined || this.precioReal <= 0) {
+        alert('⚠️ Para ofertas, debes ingresar el precio real (precio original antes del descuento)');
         return;
       }
       if (this.newProduct.price >= this.precioReal) {
@@ -174,11 +177,17 @@ export class ProductosComponent implements OnInit {
     if (this.newProduct.videoURL) productToSave.videoURL = this.newProduct.videoURL;
 
     // ✅ CORREGIDO: SI ES OFERTA → GUARDAR precioReal (obligatorio)
-    if (this.newProduct.estado === 'Oferta' && this.precioReal !== null) {
+    if (this.newProduct.estado === 'Oferta') {
+      if (this.precioReal === null || this.precioReal === undefined || this.precioReal <= 0) {
+        alert('⚠️ Para ofertas, debes ingresar el precio real');
+        return;
+      }
       productToSave.precioReal = Number(this.precioReal);
-    } else if (this.newProduct.estado === 'Normal') {
+      console.log('✅ precioReal agregado:', productToSave.precioReal);
+    } else {
       // Si es Normal, asegurar que precioReal sea null
       productToSave.precioReal = null;
+      console.log('✅ Producto Normal - precioReal establecido como null');
     }
 
     console.log("📤 Enviando:", productToSave);
