@@ -24,6 +24,10 @@ export class CategoriasComponent implements OnInit {
   searchTerm = '';
   selectedCategory = '';
   editingProductId: string | null = null;
+  currentPage: number = 1;
+totalPages: number = 1;
+itemsPerPage: number = 10;
+
 
 categories = [
   'Agroindustria',
@@ -52,7 +56,7 @@ categories = [
   estados = ['Ofertas', 'Estado normal'];
 
   newProduct: ProductExtended = {
-    codigo: 0,
+    codigo: '',
     name: '',
     description: '',
     stock: 0,
@@ -81,15 +85,17 @@ categories = [
     this.loadAllProducts();
   }
 
-  loadAllProducts() {
-    this.productService.getProducts().subscribe({
-      next: (data) => {
-        this.products = data;
-        this.filteredProducts = [...this.products];
-      },
-      error: (err) => console.error('Error al cargar productos:', err)
-    });
-  }
+loadAllProducts() {
+  this.productService.getProducts().subscribe({
+    next: (data) => {
+      this.products = data;
+      this.filteredProducts = [...this.products];
+      this.updatePagination();  // ✅ aquí sí debe ir
+    },
+    error: (err) => console.error('Error al cargar productos:', err)
+  });
+}
+
 
   onFileSelected(event: any, fieldName: string) {
     const file = event.target.files?.[0];
@@ -143,16 +149,33 @@ categories = [
       category === 'all' ? this.products : this.products.filter(p => p.category === category);
   }
 
-  buscar() {
-    const term = this.searchTerm.toLowerCase();
-    this.filteredProducts = this.products.filter(
-      (p) => p.name.toLowerCase().includes(term) || p.codigo.toString().includes(term)
+buscar() {
+  const term = this.searchTerm.trim().toLowerCase();
+
+  // Si borran el texto → mostrar todo
+  if (term === '') {
+    this.filteredProducts = [...this.products];
+    this.selectedCategory = 'all'; // resetear categoría
+  } 
+  else {
+    // Filtrar por nombre o código
+    this.filteredProducts = this.products.filter((p) =>
+      p.name.toLowerCase().includes(term) ||
+      p.codigo.toString().toLowerCase().includes(term)
     );
   }
 
+  this.currentPage = 1;
+  this.updatePagination();
+}
+
+
+
+
+
   resetForm() {
     this.newProduct = {
-      codigo: 0,
+      codigo: '',
       name: '',
       description: '',
       stock: 0,
@@ -173,4 +196,22 @@ categories = [
   getProductCountByCategory(category: string): number {
     return this.products.filter(p => p.category === category).length;
   }
+
+get paginatedProducts() {
+  const start = (this.currentPage - 1) * this.itemsPerPage;
+  const end = start + this.itemsPerPage;
+  return this.filteredProducts.slice(start, end);
+}
+
+
+updatePagination() {
+  this.totalPages = Math.ceil(this.filteredProducts.length / this.itemsPerPage);
+
+  // Ajusta si la página queda fuera del rango
+  if (this.currentPage > this.totalPages) {
+    this.currentPage = this.totalPages || 1;
+  }
+}
+
+
 }

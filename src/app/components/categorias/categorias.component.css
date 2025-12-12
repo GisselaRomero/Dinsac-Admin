@@ -291,3 +291,87 @@ p {
     width: 100%;
   }
 }
+
+
+
+
+/* 📌 PAGINACIÓN */
+.paginacion {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin: 25px 0;
+  flex-wrap: wrap;
+}
+
+.paginacion button {
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 2px solid #368a91;
+  background-color: white;
+  color: #1a4d6c;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.25s ease;
+  min-width: 45px;
+}
+
+.paginacion button:hover {
+  background-color: #368a91;
+  color: white;
+  transform: translateY(-2px);
+}
+
+/* 🔵 Activo */
+.paginacion button.active {
+  background-color: #1a4d6c;
+  color: white;
+  border-color: #1a4d6c;
+}
+
+/* ❌ Deshabilitados */
+.paginacion button:disabled {
+  background-color: #e0e0e0;
+  border-color: #ccc;
+  color: #777;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.paginacion button:disabled:hover {
+  background-color: #e0e0e0;
+  color: #777;
+}
+
+/* 📱📱 MÓVILES (pantallas pequeñas) */
+@media (max-width: 600px) {
+  .paginacion {
+    gap: 6px;
+  }
+
+  .paginacion button {
+    flex: 1 1 calc(33.33% - 10px); /* 3 botones por fila */
+    padding: 10px;
+    font-size: 14px;
+    min-width: unset;
+  }
+}
+
+/* 📱 Pantallas MUY pequeñas (<=400px) */
+@media (max-width: 400px) {
+  .paginacion button {
+    flex: 1 1 calc(50% - 10px); /* 2 botones por fila */
+    font-size: 13px;
+    padding: 9px;
+  }
+}
+
+/* 🍼 Ultra pequeño (<=320px tipo iPhone SE) */
+@media (max-width: 320px) {
+  .paginacion button {
+    flex: 1 1 100%; /* Un botón por fila */
+    font-size: 12px;
+  }
+}

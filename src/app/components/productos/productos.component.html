@@ -18,6 +18,19 @@
       <label for="stock">Stock:</label>
       <input id="stock" type="number" name="stock" [(ngModel)]="newProduct.stock" required />
     </div>
+    <div class="form-group">
+  <label for="price">Precio (S/):</label>
+  <input 
+    id="price" 
+    type="number" 
+    name="price" 
+    [(ngModel)]="newProduct.price" 
+    step="0.01" 
+    min="0" 
+    required
+  />
+</div>
+
 
     <!-- === Sección de imágenes === -->
     <div *ngFor="let imgField of imageFields" class="form-group">
@@ -180,6 +193,7 @@
         <th>Categoría</th>
         <th>Tipo</th>
         <th>Stock</th>
+        <th>Precio</th>
         <th>Imágenes</th>
         <th>Acciones</th>
       </tr>
@@ -191,6 +205,7 @@
         <td>{{ p.category }}</td>
         <td>{{ p.estado }}</td>
         <td>{{ p.stock }}</td>
+        <td>S/ {{ p.price | number:'1.2-2' }}</td>
         <td>
           <div class="thumbs">
             <ng-container *ngFor="let img of [p.image, p.image1, p.image2, p.image3]">

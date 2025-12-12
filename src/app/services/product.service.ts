@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 // Modelo del producto
 export interface Product {
   _id?: string;
-  codigo: number;
+  codigo: string;
   name: string;
   description: string;
   image: string;
@@ -47,9 +47,15 @@ export class ProductService {
   }
 
   // Actualizar un producto existente
-  updateProduct(id: string, product: Product): Observable<Product> {
-    return this.http.put<Product>(`${this.apiUrl}/${id}`, product);
-  }
+updateProduct(id: string, product: Partial<Product>): Observable<Product> {
+  // ✅ Crear copia sin _id
+  const { _id, ...productWithoutId } = product as any;
+  
+  console.log('🔧 Service updateProduct - ID:', id);
+  console.log('🔧 Service updateProduct - Body (sin _id):', productWithoutId);
+  
+  return this.http.put<Product>(`${this.apiUrl}/${id}`, productWithoutId);
+}
 
   // Eliminar un producto
   deleteProduct(id: string): Observable<any> {
