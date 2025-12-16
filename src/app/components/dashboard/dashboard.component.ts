@@ -29,11 +29,18 @@ export class DashboardComponent implements OnInit {
   totalClientes = 0;
   tasaConversion = 0;
 
+
+  // NUEVO: Variables para tiempo de atención
+tiempoPromedioAtencion = 0; // en horas
+tiempoMinimo = 0;
+tiempoMaximo = 0;
+tendenciaTiempo = '-15%'; // mejora = negativo
+
+
   // Tendencias (nuevo)
   tendenciaClientes = '+12%';
   tendenciaInteracciones = '+28%';
   tendenciaCotizaciones = '+8%';
-  tendenciaConversion = '+5%';
 
   // Historial de cotizaciones (base)
   historialCotizaciones: any[] = [];
@@ -191,11 +198,57 @@ export class DashboardComponent implements OnInit {
   }
 
   // NUEVO: Calcular tasa de conversión
-  calcularTasaConversion() {
-    if (this.totalInteraccionesIA > 0) {
-      this.tasaConversion = Math.round((this.totalCotizaciones / this.totalInteraccionesIA) * 100);
-    }
+// NUEVO: Calcular tasa de conversión Y tiempo de atención
+// NUEVO: Calcular tasa de conversión Y tiempo de atención
+calcularTasaConversion() {
+  if (this.totalInteraccionesIA > 0) {
+    this.tasaConversion = Math.round((this.totalCotizaciones / this.totalInteraccionesIA) * 100);
   }
+  
+  // Calcular tiempos de atención
+  this.calcularTiemposAtencion();
+}
+
+// NUEVO: Calcular tiempos promedio, mínimo y máximo
+calcularTiemposAtencion(): void {
+  if (this.historialOriginal.length === 0) {
+    this.tiempoPromedioAtencion = 0;
+    this.tiempoMinimo = 0;
+    this.tiempoMaximo = 0;
+    return;
+  }
+
+  const ahora = new Date().getTime();
+  const tiempos: number[] = [];
+
+  this.historialOriginal.forEach(cot => {
+    if (cot.fecha) {
+      const fechaCotizacion = new Date(cot.fecha).getTime();
+      const horasDesdeCreacion = (ahora - fechaCotizacion) / (1000 * 60 * 60);
+      
+      // Solo considerar cotizaciones de los últimos 30 días para ser más relevante
+      if (horasDesdeCreacion <= 720) { // 720 horas = 30 días
+        tiempos.push(horasDesdeCreacion);
+      }
+    }
+  });
+
+  if (tiempos.length > 0) {
+    const suma = tiempos.reduce((acc, t) => acc + t, 0);
+    this.tiempoPromedioAtencion = Math.round((suma / tiempos.length) * 10) / 10;
+    this.tiempoMinimo = Math.round(Math.min(...tiempos) * 10) / 10;
+    this.tiempoMaximo = Math.round(Math.max(...tiempos) * 10) / 10;
+  } else {
+    this.tiempoPromedioAtencion = 0;
+    this.tiempoMinimo = 0;
+    this.tiempoMaximo = 0;
+  }
+}
+
+
+
+
+
 
   // Extrae categorías y tipos de contacto únicos
   extraerFiltrosUnicos(): void {
@@ -303,16 +356,17 @@ export class DashboardComponent implements OnInit {
     const colores = {
       'WhatsApp': '#25d366',
       'Correo': '#1a73e8',
-      'Teléfono': '#ff5722'
+      'Teléfono': '#ff5722',
+      'No especificado': '#9ca3af'
     };
 
     // Actualizar gráfica de pie
-    this.pieChartData.labels = Object.keys(canales).filter(k => canales[k] > 0);
-    this.pieChartData.datasets[0].data = Object.values(canales).filter(v => v > 0);
-    this.pieChartData.datasets[0].backgroundColor = Object.keys(canales)
-      .filter(k => canales[k] > 0)
-      .map(k => colores[k as keyof typeof colores]);
-  }
+this.pieChartData.labels = Object.keys(canales).filter(k => canales[k] > 0);
+  this.pieChartData.datasets[0].data = Object.values(canales).filter(v => v > 0);
+  this.pieChartData.datasets[0].backgroundColor = this.pieChartData.labels.map(
+    l => colores[l as keyof typeof colores]
+  );
+}
 
   // NUEVO: Colores para productos
   getColorProducto(index: number): string {
@@ -401,7 +455,14 @@ export class DashboardComponent implements OnInit {
   private descargarCSV(contenido: string, nombreArchivo: string): void {
     const blob = new Blob([contenido], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
-
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', nombreArchivo);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
   }
 
   // PDF - ver / descargar

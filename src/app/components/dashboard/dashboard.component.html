@@ -1,5 +1,5 @@
 <!-- ============================================ -->
-<!-- dashboard.component.html -->
+<!-- dashboard.component.html - CORREGIDO -->
 <!-- ============================================ -->
 <section class="dashboard-modern">
   <!-- Font Awesome -->
@@ -46,15 +46,24 @@
       <p class="kpi-value">{{ totalCotizaciones }}</p>
     </div>
 
+    <!-- ✅ KPI MODIFICADO: Tiempo de Atención -->
     <div class="kpi-card">
       <div class="kpi-header">
-        <div class="kpi-icon green">
-          <i class="fas fa-chart-line"></i>
+        <div class="kpi-icon orange">
+          <i class="fas fa-clock"></i>
         </div>
-        <span class="kpi-trend positive">{{ tendenciaConversion }}</span>
+        <span class="kpi-trend negative">{{ tendenciaTiempo }}</span>
       </div>
-      <h3 class="kpi-label">Tasa Conversión</h3>
-      <p class="kpi-value">{{ tasaConversion }}%</p>
+      <h3 class="kpi-label">Tiempo Promedio Atención</h3>
+      <p class="kpi-value">{{ tiempoPromedioAtencion }}h</p>
+      <div class="kpi-details">
+        <span class="detail-item">
+          <i class="fas fa-arrow-down"></i> Mín: {{ tiempoMinimo }}h
+        </span>
+        <span class="detail-item">
+          <i class="fas fa-arrow-up"></i> Máx: {{ tiempoMaximo }}h
+        </span>
+      </div>
     </div>
   </div>
 
@@ -157,7 +166,7 @@
     </div>
   </div>
 
-  <!-- ======= HISTORIAL DE COTIZACIONES (TU CÓDIGO ORIGINAL) ======= -->
+  <!-- ======= HISTORIAL DE COTIZACIONES ======= -->
   <div class="cotizaciones-section">
     <div class="section-header">
       <h4>📋 Historial de Cotizaciones</h4>
