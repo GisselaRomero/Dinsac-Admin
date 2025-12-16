@@ -18,3 +18,4 @@ export class ChatNotificationService {
     this.notificacionesSubject.next(total);
   }
 }
+
