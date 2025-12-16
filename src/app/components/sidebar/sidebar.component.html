@@ -36,11 +36,13 @@
         </a>
       </li>
 
-      <li>
-        <a (click)="logClick('/welcome/chat-admin-standalone')" routerLinkActive="active">
-          <i class="fas fa-comments"></i> Chat
-        </a>
-      </li>
+<li>
+  <a (click)="logClick('/welcome/chat-admin-standalone')" routerLinkActive="active">
+    <i class="fas fa-comments"></i> Chat
+    <span *ngIf="totalChatsNuevos > 0" class="badge">{{ totalChatsNuevos }}</span>
+  </a>
+</li>
+
          <li>
         <a (click)="logClick('/welcome/bannerofertas')" routerLinkActive="active">
           <i class="fas fa-comments"></i> Banner Ofertas

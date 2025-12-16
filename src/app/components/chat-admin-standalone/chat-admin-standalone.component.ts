@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { io, Socket } from 'socket.io-client';
 import { HttpClientModule, HttpClient } from '@angular/common/http';
+import { ChatNotificationService } from 'src/app/services/chat-notification.service';
 
 interface Mensaje {
   remitente: 'cliente' | 'admin';
@@ -33,7 +34,7 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
   clienteSeleccionado: string | null = null;
   socket!: Socket;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private chatNotifService: ChatNotificationService) {}
 
   ngOnInit(): void {
     this.socket = io('https://backend-dinsac-hlf0.onrender.com', {
@@ -95,6 +96,10 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
           });
           console.log('✅ Nuevo cliente agregado:', msg.clienteId);
         }
+
+        // 🔔 Actualizar notificaciones globales
+        const totalClientesConNuevos = this.clientes.filter(c => c.notificaciones && c.notificaciones > 0).length;
+        this.chatNotifService.actualizar(totalClientesConNuevos);
       }
     });
 
@@ -108,6 +113,10 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
       }
 
       this.clientes = this.clientes.filter(c => c.id !== data.clienteId);
+
+      // Actualizar notificaciones globales
+      const totalClientesConNuevos = this.clientes.filter(c => c.notificaciones && c.notificaciones > 0).length;
+      this.chatNotifService.actualizar(totalClientesConNuevos);
     });
   }
 
@@ -142,6 +151,10 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
 
     const cliente = this.clientes.find(c => c.id === clienteId);
     if (cliente) cliente.notificaciones = 0;
+
+    // 🔔 Actualizar notificaciones globales
+    const totalClientesConNuevos = this.clientes.filter(c => c.notificaciones && c.notificaciones > 0).length;
+    this.chatNotifService.actualizar(totalClientesConNuevos);
 
     this.http.get<Mensaje[]>(`https://backend-dinsac-hlf0.onrender.com/chats/${clienteId}`)
       .subscribe({
@@ -227,6 +240,11 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
           this.mensajes = [];
           this.clienteSeleccionado = null;
           this.clientes = this.clientes.filter(c => c.id !== clienteIdAEliminar);
+
+          // 🔔 Actualizar notificaciones globales
+          const totalClientesConNuevos = this.clientes.filter(c => c.notificaciones && c.notificaciones > 0).length;
+          this.chatNotifService.actualizar(totalClientesConNuevos);
+
           alert('Conversación eliminada correctamente');
         },
         error: (err) => {
@@ -263,55 +281,44 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
     document.getElementById('fileInput')?.click();
   }
 
-  // 📄 Detectar si es un archivo
   esArchivo(mensaje: string): boolean {
     return mensaje.includes('https://backend-dinsac-hlf0.onrender.com/uploads/');
   }
 
-  // 📝 Obtener nombre del archivo
   obtenerNombreArchivo(url: string): string {
     const partes = url.split('/');
     const nombreCompleto = partes[partes.length - 1];
-    
-    // Remover timestamp y decodificar
     const nombreSinTimestamp = nombreCompleto.substring(nombreCompleto.indexOf('-') + 1);
     return decodeURIComponent(nombreSinTimestamp);
   }
 
-  // 📎 Obtener extensión del archivo
   obtenerExtension(url: string): string {
-    const extension = url.split('.').pop()?.toLowerCase() || '';
-    return extension;
+    return url.split('.').pop()?.toLowerCase() || '';
   }
 
-  // 🖼️ Verificar si es imagen
   esImagen(url: string): boolean {
     const ext = this.obtenerExtension(url);
     return ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
   }
 
-  // 📄 Verificar si es PDF
   esPDF(url: string): boolean {
     return this.obtenerExtension(url) === 'pdf';
   }
 
-  // ✅ NUEVA FUNCIÓN: Descargar PDF
   descargarPDF(url: string, nombre: string): void {
-    this.http.get(url, { responseType: 'blob' })
-      .subscribe({
-        next: (blob) => {
-          const link = document.createElement('a');
-          link.href = window.URL.createObjectURL(blob);
-          link.download = nombre;
-          link.click();
-          window.URL.revokeObjectURL(link.href);
-          console.log('✅ PDF descargado:', nombre);
-        },
-        error: (err) => {
-          console.error('❌ Error descargando PDF:', err);
-          // Fallback: abrir en nueva pestaña
-          window.open(url, '_blank');
-        }
-      });
+    this.http.get(url, { responseType: 'blob' }).subscribe({
+      next: (blob) => {
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.download = nombre;
+        link.click();
+        window.URL.revokeObjectURL(link.href);
+        console.log('✅ PDF descargado:', nombre);
+      },
+      error: (err) => {
+        console.error('❌ Error descargando PDF:', err);
+        window.open(url, '_blank');
+      }
+    });
   }
 }
