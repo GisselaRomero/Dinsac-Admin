@@ -180,15 +180,34 @@
           </td>
 
           <!-- Acciones -->
-          <td class="col-acciones">
-            <button 
-              (click)="eliminarCotizacion(cot._id)" 
-              class="btn-eliminar"
-              title="Eliminar cotización">
-              🗑️
-            </button>
-          </td>
-        </tr>
+<td class="col-acciones">
+  <div class="acciones">
+    <!-- VER PDF -->
+    <button 
+      class="btn-accion view"
+      title="Ver cotización"
+      (click)="verPDF(cot)">
+      👁️
+    </button>
+
+    <!-- DESCARGAR PDF -->
+    <button 
+      class="btn-accion download"
+      title="Descargar PDF"
+      (click)="descargarPDF(cot)">
+      ⬇️
+    </button>
+
+    <!-- ELIMINAR -->
+    <button 
+      class="btn-accion delete"
+      title="Eliminar cotización"
+      (click)="eliminarCotizacion(cot._id)">
+      🗑️
+    </button>
+  </div>
+</td>
+
 
         <!-- Sin resultados -->
         <tr *ngIf="cotizacionesFiltradas.length === 0">

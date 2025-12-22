@@ -264,6 +264,44 @@ cambiarPagina(num: number) {
   getNombreProducto(producto: Producto): string {
     return producto.nombre || producto.equipo || producto.categoria || 'Producto';
   }
+verPDF(cot: any): void {
+  if (!cot.pdfBase64) {
+    alert('⚠️ Esta cotización no tiene PDF guardado');
+    return;
+  }
+
+  const pdfWindow = window.open('', '_blank');
+  if (pdfWindow) {
+    pdfWindow.document.write(`
+      <iframe 
+        width="100%" 
+        height="100%" 
+        src="data:application/pdf;base64,${cot.pdfBase64}">
+      </iframe>
+    `);
+  }
+}
+
+descargarPDF(cot: any): void {
+  if (!cot.pdfBase64) {
+    alert('⚠️ Esta cotización no tiene PDF guardado');
+    return;
+  }
+
+  const byteCharacters = atob(cot.pdfBase64);
+  const byteNumbers = Array.from(byteCharacters).map(c => c.charCodeAt(0));
+  const byteArray = new Uint8Array(byteNumbers);
+
+  const blob = new Blob([byteArray], { type: 'application/pdf' });
+  const link = document.createElement('a');
+
+  link.href = URL.createObjectURL(blob);
+  link.download = `${cot.numeroCotizacion || 'cotizacion'}.pdf`;
+
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
 
 
 actualizarPaginacion(): void {

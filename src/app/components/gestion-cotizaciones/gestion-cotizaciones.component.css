@@ -2,6 +2,66 @@
 /* gestion-cotizaciones.component.css - MINIMALISTA CON ESTILO */
 /* ============================================ */
 
+
+/* =========================
+   COLUMNA ACCIONES
+========================= */
+.col-acciones {
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* Contenedor de botones en fila */
+.acciones {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px; /* separación entre botones */
+}
+
+/* Estilo base de botones */
+.btn-accion {
+  background-color: #ffffff;
+  border: 1px solid #1e3a5f; /* azul oscuro */
+  color: #1e3a5f;
+  font-size: 16px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  line-height: 1;
+}
+
+/* Hover general */
+.btn-accion:hover {
+  background-color: #1e3a5f;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+/* Hover específico (opcional) */
+.btn-accion.view:hover {
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
+.btn-accion.download:hover {
+  background-color: #0f766e;
+  border-color: #0f766e;
+}
+
+.btn-accion.delete:hover {
+  background-color: #dc2626;
+  border-color: #dc2626;
+}
+
+/* Activo */
+.btn-accion:active {
+  transform: scale(0.95);
+}
+
+
+
 .gestion-cotizaciones {
   padding: 32px;
   max-width: 1600px;
