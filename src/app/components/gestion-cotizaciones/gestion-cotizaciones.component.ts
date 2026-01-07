@@ -49,7 +49,7 @@ export class GestionCotizacionesComponent implements OnInit {
   totalCotizaciones = 0;
   pendientes = 0;
   enProceso = 0;
-  completadas = 0;
+  vendida = 0;
   canceladas = 0;
 cotizacionesPaginadas: Cotizacion[] = [];
 
@@ -99,7 +99,7 @@ paginasArray: number[] = [];
     this.totalCotizaciones = this.cotizacionesFiltradas.length;
     this.pendientes = this.cotizacionesFiltradas.filter(c => c.estado === 'pendiente').length;
     this.enProceso = this.cotizacionesFiltradas.filter(c => c.estado === 'en proceso').length;
-    this.completadas = this.cotizacionesFiltradas.filter(c => c.estado === 'completada').length;
+    this.vendida = this.cotizacionesFiltradas.filter(c => c.estado === 'vendida').length;
     this.canceladas = this.cotizacionesFiltradas.filter(c => c.estado === 'cancelada').length;
   }
 
@@ -245,7 +245,7 @@ cambiarPagina(num: number) {
     const colores: any = {
       'pendiente': '#f59e0b',
       'en proceso': '#3b82f6',
-      'completada': '#10b981',
+      'vendida': '#10b981',
       'cancelada': '#ef4444'
     };
     return colores[estado] || '#6b7280';
@@ -255,7 +255,7 @@ cambiarPagina(num: number) {
     const iconos: any = {
       'pendiente': '⏳',
       'en proceso': '🔄',
-      'completada': '✅',
+      'vendida': '✅',
       'cancelada': '❌'
     };
     return iconos[estado] || '📋';
