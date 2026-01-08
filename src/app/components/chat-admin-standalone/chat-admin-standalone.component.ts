@@ -11,6 +11,7 @@ interface Mensaje {
   clienteId: string | null;
   nombre?: string;
   fecha?: string;
+  
 }
 
 interface Cliente {
@@ -18,6 +19,7 @@ interface Cliente {
   nombre: string;
   notificaciones?: number;
   ultimoMensaje?: string;
+  
 }
 
 @Component({
@@ -119,6 +121,8 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
       this.chatNotifService.actualizar(totalClientesConNuevos);
     });
   }
+mostrarToast = false;
+toastTexto = '';
 
   cargarClientes(): void {
     this.http.get<Cliente[]>('https://backend-dinsac-hlf0.onrender.com/clientes-chat')
@@ -253,6 +257,7 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
         }
       });
   }
+  
 
   scrollToBottom(): void {
     const cont = document.querySelector('.mensajes');
