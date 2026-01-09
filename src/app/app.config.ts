@@ -1,5 +1,5 @@
 import { ApplicationConfig } from '@angular/core';
-import { provideRouter, Routes } from '@angular/router';
+import { provideRouter, Routes, withHashLocation } from '@angular/router';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { provideHttpClient, withFetch } from '@angular/common/http';
 
@@ -47,10 +47,10 @@ export const routes: Routes = [
   { path: '**', redirectTo: '' }
 ];
 
-// Configuración general
+// ✅ CONFIGURACIÓN FINAL
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideRouter(routes),
+    provideRouter(routes, withHashLocation()), // 🔥 AQUÍ VA
     provideClientHydration(withEventReplay()),
     provideHttpClient(withFetch())
   ]
