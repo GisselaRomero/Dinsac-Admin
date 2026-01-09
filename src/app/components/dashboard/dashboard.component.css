@@ -612,7 +612,7 @@
 /* ========== RESPONSIVE ========== */
 @media (max-width: 1024px) {
   .dashboard-modern {
-    padding: 24px;
+    padding: 23px;
   }
 
   .charts-grid {
@@ -729,4 +729,23 @@
   .cotizaciones-section {
     padding: 20px 16px;
   }
+}
+
+
+
+.tabla-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.tabla-cotizaciones {
+  width: 100%;
+  min-width: 1100px;
+}
+.email-cliente,
+.contacto-link,
+.lista-productos li {
+  white-space: normal;
+  word-break: break-word;
+  max-width: 220px;
 }
