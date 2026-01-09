@@ -4,5 +4,16 @@ html, body {
   height: 100%;
 }
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+/* Escalado global */
+body {
+  transform: scale(0.8);   /* 0.75 o 0.65 si lo quieres más pequeño */
+  transform-origin: top left;
+  width: 125%;             /* 1 / 0.8 = 125% */
+  height: 125%;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+.app-scale {
+  transform: scale(0.8);
+  transform-origin: top left;
+  width: 125%;
+}
