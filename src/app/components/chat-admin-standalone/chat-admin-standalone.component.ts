@@ -39,7 +39,7 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
   constructor(private http: HttpClient, private chatNotifService: ChatNotificationService) {}
 
   ngOnInit(): void {
-    this.socket = io('https://backend-dinsac-77sq.onrender.com', {
+    this.socket = io('https://backend-dinsac-hlf0.onrender.com', {
       transports: ['websocket', 'polling']
     });
 
@@ -53,12 +53,6 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
     });
 
     this.cargarClientes();
-
-
-    setTimeout(() => {
-  this.cargarNotificaciones();
-}, 300);
-
 
     // Escuchar mensajes
     this.socket.on('mensaje', (msg: Mensaje) => {
@@ -88,28 +82,22 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
       } else {
         // Incrementar notificaciones si el cliente no está seleccionado
         const cliente = this.clientes.find(c => c.id === msg.clienteId);
-if (msg.remitente === 'cliente' && msg.clienteId) {
+        if (cliente && msg.remitente === 'cliente') {
+          cliente.notificaciones = (cliente.notificaciones || 0) + 1;
+          cliente.ultimoMensaje = msg.mensaje;
+          console.log(`🔔 Notificación para ${cliente.nombre}`);
+        }
 
-  let cliente = this.clientes.find(c => c.id === msg.clienteId);
-
-  // 🆕 SI NO EXISTE, CREARLO
-  if (!cliente) {
-    cliente = {
-      id: msg.clienteId,
-      nombre: msg.nombre || `Cliente ${msg.clienteId.substring(0, 8)}`,
-          ultimoMensaje: '',
-      notificaciones: 0
-    };
-    this.clientes.push(cliente);
-  }
-
-  // 🔔 SOLO SI NO ESTÁ SELECCIONADO
-  if (msg.clienteId !== this.clienteSeleccionado) {
-    cliente.notificaciones = (cliente.notificaciones || 0) + 1;
-    cliente.ultimoMensaje = msg.mensaje;
-    this.guardarNotificaciones();
-  }
-}
+        // Si es un cliente nuevo, agregarlo a la lista
+        if (!cliente && msg.remitente === 'cliente' && msg.clienteId) {
+          this.clientes.push({
+            id: msg.clienteId,
+            nombre: msg.nombre || `Cliente ${msg.clienteId.substring(0, 8)}`,
+            notificaciones: 1,
+            ultimoMensaje: msg.mensaje
+          });
+          console.log('✅ Nuevo cliente agregado:', msg.clienteId);
+        }
 
         // 🔔 Actualizar notificaciones globales
         const totalClientesConNuevos = this.clientes.filter(c => c.notificaciones && c.notificaciones > 0).length;
@@ -133,36 +121,11 @@ if (msg.remitente === 'cliente' && msg.clienteId) {
       this.chatNotifService.actualizar(totalClientesConNuevos);
     });
   }
-
-
-
 mostrarToast = false;
 toastTexto = '';
 
-
-
-
-guardarNotificaciones() {
-  localStorage.setItem('chat_notificaciones', JSON.stringify(this.clientes));
-}
-
-cargarNotificaciones() {
-  const data = localStorage.getItem('chat_notificaciones');
-  if (!data) return;
-
-  const guardados: Cliente[] = JSON.parse(data);
-
-  this.clientes.forEach(cliente => {
-    const encontrado = guardados.find(g => g.id === cliente.id);
-    if (encontrado) {
-      cliente.notificaciones = encontrado.notificaciones || 0;
-      cliente.ultimoMensaje = encontrado.ultimoMensaje || '';
-    }
-  });
-}
-
   cargarClientes(): void {
-    this.http.get<Cliente[]>('https://backend-dinsac-77sq.onrender.com/clientes-chat')
+    this.http.get<Cliente[]>('https://backend-dinsac-hlf0.onrender.com/clientes-chat')
       .subscribe({
         next: (res) => {
           const idsExistentes = new Set(this.clientes.map(c => c.id));
@@ -190,20 +153,14 @@ cargarNotificaciones() {
     this.clienteSeleccionado = clienteId;
     this.mensajes = [];
 
-const cliente = this.clientes.find(c => c.id === clienteId);
-if (cliente) {
-  cliente.notificaciones = 0;
-  cliente.ultimoMensaje = '';
+    const cliente = this.clientes.find(c => c.id === clienteId);
+    if (cliente) cliente.notificaciones = 0;
 
-    this.guardarNotificaciones(); // ✅ FALTABA ESTO
-
-}
     // 🔔 Actualizar notificaciones globales
     const totalClientesConNuevos = this.clientes.filter(c => c.notificaciones && c.notificaciones > 0).length;
     this.chatNotifService.actualizar(totalClientesConNuevos);
 
-
-    this.http.get<Mensaje[]>(`https://backend-dinsac-77sq.onrender.com/chats/${clienteId}`)
+    this.http.get<Mensaje[]>(`https://backend-dinsac-hlf0.onrender.com/chats/${clienteId}`)
       .subscribe({
         next: (res) => {
           const cliente = this.clientes.find(c => c.id === clienteId);
@@ -248,7 +205,7 @@ if (cliente) {
     formData.append('archivo', archivo);
     formData.append('clienteId', this.clienteSeleccionado);
 
-    this.http.post('https://backend-dinsac-77sq.onrender.com/upload-chat', formData)
+    this.http.post('https://backend-dinsac-hlf0.onrender.com/upload-chat', formData)
       .subscribe({
         next: (res: any) => {
           console.log('✅ Archivo subido:', res);
@@ -281,13 +238,12 @@ if (cliente) {
 
     const clienteIdAEliminar = this.clienteSeleccionado;
 
-    this.http.delete(`https://backend-dinsac-77sq.onrender.com/chats/${clienteIdAEliminar}`)
+    this.http.delete(`https://backend-dinsac-hlf0.onrender.com/chats/${clienteIdAEliminar}`)
       .subscribe({
         next: () => {
           this.mensajes = [];
           this.clienteSeleccionado = null;
           this.clientes = this.clientes.filter(c => c.id !== clienteIdAEliminar);
-this.guardarNotificaciones();
 
           // 🔔 Actualizar notificaciones globales
           const totalClientesConNuevos = this.clientes.filter(c => c.notificaciones && c.notificaciones > 0).length;
@@ -331,7 +287,7 @@ this.guardarNotificaciones();
   }
 
   esArchivo(mensaje: string): boolean {
-    return mensaje.includes('https://backend-dinsac-77sq.onrender.com/uploads/');
+    return mensaje.includes('https://backend-dinsac-hlf0.onrender.com/uploads/');
   }
 
   obtenerNombreArchivo(url: string): string {
