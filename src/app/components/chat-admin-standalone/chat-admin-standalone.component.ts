@@ -158,8 +158,9 @@ toastTexto = '';
       cliente.ultimoMensaje = ''; // ← AGREGAR ESTA LÍNEA
 
     // 🔔 Actualizar notificaciones globales
-        const totalClientesConNuevos = this.clientes.filter(c => c.notificaciones && c.notificaciones > 0).length;
+    const totalClientesConNuevos = this.clientes.filter(c => c.notificaciones && c.notificaciones > 0).length;
     this.chatNotifService.actualizar(totalClientesConNuevos);
+
     
     this.http.get<Mensaje[]>(`https://backend-dinsac-hlf0.onrender.com/chats/${clienteId}`)
       .subscribe({
