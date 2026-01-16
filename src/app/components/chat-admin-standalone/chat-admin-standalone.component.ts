@@ -54,6 +54,12 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
 
     this.cargarClientes();
 
+
+    setTimeout(() => {
+  this.cargarNotificaciones();
+}, 300);
+
+
     // Escuchar mensajes
     this.socket.on('mensaje', (msg: Mensaje) => {
       console.log('📩 Mensaje recibido por admin:', msg);
@@ -82,11 +88,13 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
       } else {
         // Incrementar notificaciones si el cliente no está seleccionado
         const cliente = this.clientes.find(c => c.id === msg.clienteId);
-        if (cliente && msg.remitente === 'cliente') {
-          cliente.notificaciones = (cliente.notificaciones || 0) + 1;
-          cliente.ultimoMensaje = msg.mensaje;
-          console.log(`🔔 Notificación para ${cliente.nombre}`);
-        }
+     if (cliente && msg.remitente === 'cliente') {
+  cliente.notificaciones = (cliente.notificaciones || 0) + 1;
+  cliente.ultimoMensaje = msg.mensaje;
+
+  this.guardarNotificaciones();
+}
+
 
         // Si es un cliente nuevo, agregarlo a la lista
         if (!cliente && msg.remitente === 'cliente' && msg.clienteId) {
@@ -121,8 +129,33 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
       this.chatNotifService.actualizar(totalClientesConNuevos);
     });
   }
+
+
+
 mostrarToast = false;
 toastTexto = '';
+
+
+
+
+guardarNotificaciones() {
+  localStorage.setItem('chat_notificaciones', JSON.stringify(this.clientes));
+}
+
+cargarNotificaciones() {
+  const data = localStorage.getItem('chat_notificaciones');
+  if (!data) return;
+
+  const guardados: Cliente[] = JSON.parse(data);
+
+  this.clientes.forEach(cliente => {
+    const encontrado = guardados.find(g => g.id === cliente.id);
+    if (encontrado) {
+      cliente.notificaciones = encontrado.notificaciones || 0;
+      cliente.ultimoMensaje = encontrado.ultimoMensaje || '';
+    }
+  });
+}
 
   cargarClientes(): void {
     this.http.get<Cliente[]>('https://backend-dinsac-hlf0.onrender.com/clientes-chat')
@@ -157,6 +190,9 @@ const cliente = this.clientes.find(c => c.id === clienteId);
 if (cliente) {
   cliente.notificaciones = 0;
   cliente.ultimoMensaje = '';
+
+    this.guardarNotificaciones(); // ✅ FALTABA ESTO
+
 }
     // 🔔 Actualizar notificaciones globales
     const totalClientesConNuevos = this.clientes.filter(c => c.notificaciones && c.notificaciones > 0).length;
@@ -247,6 +283,7 @@ if (cliente) {
           this.mensajes = [];
           this.clienteSeleccionado = null;
           this.clientes = this.clientes.filter(c => c.id !== clienteIdAEliminar);
+this.guardarNotificaciones();
 
           // 🔔 Actualizar notificaciones globales
           const totalClientesConNuevos = this.clientes.filter(c => c.notificaciones && c.notificaciones > 0).length;
