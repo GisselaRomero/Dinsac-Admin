@@ -15,7 +15,7 @@ import { Subscription } from 'rxjs';
 export class SidebarComponent implements OnInit, OnDestroy {
   totalPendientes = 0;
   totalChatsNuevos = 0;
-  private readonly API_URL = 'https://backend-dinsac-hlf0.onrender.com';
+  private readonly API_URL = 'https://backend-dinsac-77sq.onrender.com';
   private chatSub!: Subscription;
 
   constructor(

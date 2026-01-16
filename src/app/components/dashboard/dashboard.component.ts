@@ -166,17 +166,17 @@ tendenciaTiempo = '-15%'; // mejora = negativo
 
   cargarDatos() {
     // Cargar clientes
-    this.http.get<any[]>('https://backend-dinsac-hlf0.onrender.com/clientes').subscribe(cli => {
+    this.http.get<any[]>('https://backend-dinsac-77sq.onrender.com/clientes').subscribe(cli => {
       this.totalClientes = cli.length;
     });
 
     // Cargar interacciones IA
-    this.http.get<any[]>('https://backend-dinsac-hlf0.onrender.com/interacciones').subscribe(data => {
+    this.http.get<any[]>('https://backend-dinsac-77sq.onrender.com/interacciones').subscribe(data => {
       this.totalInteraccionesIA = Array.isArray(data) ? data.length : 0;
     });
 
     // Total cotizaciones
-    this.http.get<any[]>('https://backend-dinsac-hlf0.onrender.com/cotizaciones').subscribe(data => {
+    this.http.get<any[]>('https://backend-dinsac-77sq.onrender.com/cotizaciones').subscribe(data => {
       const ordenadas = Array.isArray(data) 
         ? data.sort((a: any, b: any) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()) 
         : [];
@@ -501,7 +501,7 @@ this.pieChartData.labels = Object.keys(canales).filter(k => canales[k] > 0);
 
   eliminarCotizacion(id: string) {
     if (confirm('¿Estás seguro de eliminar esta cotización?')) {
-      this.http.delete(`https://backend-dinsac-hlf0.onrender.com/cotizaciones/${id}`).subscribe({
+      this.http.delete(`https://backend-dinsac-77sq.onrender.com/cotizaciones/${id}`).subscribe({
         next: () => {
           alert('Cotización eliminada exitosamente');
           this.cargarDatos(); // Recargar datos
@@ -546,7 +546,7 @@ this.pieChartData.labels = Object.keys(canales).filter(k => canales[k] > 0);
     const docDef = this.getDocumentDefinition(cot);
     pdfMake.createPdf(docDef).getBase64((pdfBase64: string) => {
       const payload = { ...cot, pdfBase64 };
-      this.http.post('https://backend-dinsac-hlf0.onrender.com/cotizaciones', payload).subscribe({
+      this.http.post('https://backend-dinsac-77sq.onrender.com/cotizaciones', payload).subscribe({
         next: (res) => console.log('✅ Cotización enviada y guardada:', res),
         error: (err) => console.error('❌ Error al guardar cotización:', err)
       });
