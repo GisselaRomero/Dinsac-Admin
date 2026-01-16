@@ -60,7 +60,7 @@ export class ReportesComponent implements OnInit {
   }
 
   cargarCotizaciones() {
-    this.http.get<any[]>('https://backend-dinsac-hlf0.onrender.com/cotizaciones').subscribe({
+    this.http.get<any[]>('https://backend-dinsac-77sq.onrender.com/cotizaciones').subscribe({
       next: (data) => {
         this.cotizaciones = data.map(cot => ({
           ...cot,
