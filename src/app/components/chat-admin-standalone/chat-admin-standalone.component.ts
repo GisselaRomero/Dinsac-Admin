@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { io, Socket } from 'socket.io-client';
@@ -24,6 +24,7 @@ interface Cliente {
 
 @Component({
   selector: 'app-chat-admin-standalone',
+  
   standalone: true,
   imports: [CommonModule, FormsModule, HttpClientModule],
   templateUrl: './chat-admin-standalone.component.html',
@@ -36,7 +37,8 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
   clienteSeleccionado: string | null = null;
   socket!: Socket;
 
-  constructor(private http: HttpClient, private chatNotifService: ChatNotificationService) {}
+  constructor(private http: HttpClient, private chatNotifService: ChatNotificationService,  private ngZone: NgZone
+) {}
 
   ngOnInit(): void {
     this.socket = io('https://backend-dinsac-hlf0.onrender.com', {
@@ -55,55 +57,53 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
     this.cargarClientes();
 
     // Escuchar mensajes
-    this.socket.on('mensaje', (msg: Mensaje) => {
-      console.log('📩 Mensaje recibido por admin:', msg);
+this.socket.on('mensaje', (msg: Mensaje) => {
+  this.ngZone.run(() => {
+    console.log('📩 Mensaje recibido por admin:', msg);
 
-      // Asignar nombre si es cliente
-      if (msg.remitente === 'cliente' && msg.clienteId) {
-        const cliente = this.clientes.find(c => c.id === msg.clienteId);
-        msg.nombre = cliente ? cliente.nombre : msg.nombre || 'Cliente';
+    if (msg.remitente === 'cliente' && msg.clienteId) {
+      const cliente = this.clientes.find(c => c.id === msg.clienteId);
+      msg.nombre = cliente ? cliente.nombre : msg.nombre || 'Cliente';
+    }
+
+    if (msg.clienteId === this.clienteSeleccionado) {
+      const existe = this.mensajes.some(
+        m =>
+          m.mensaje === msg.mensaje &&
+          m.remitente === msg.remitente &&
+          Math.abs(
+            new Date(m.fecha || '').getTime() -
+            new Date(msg.fecha || '').getTime()
+          ) < 2000
+      );
+
+      if (!existe) {
+        this.mensajes.push(msg);
+        setTimeout(() => this.scrollToBottom(), 100);
+      }
+    } else {
+      const cliente = this.clientes.find(c => c.id === msg.clienteId);
+
+      if (cliente && msg.remitente === 'cliente') {
+        cliente.notificaciones = (cliente.notificaciones || 0) + 1;
+        cliente.ultimoMensaje = msg.mensaje;
       }
 
-      // Agregar al chat activo si corresponde
-      if (msg.clienteId === this.clienteSeleccionado) {
-        const existe = this.mensajes.some(
-          m => m.mensaje === msg.mensaje &&
-               m.remitente === msg.remitente &&
-               Math.abs(new Date(m.fecha || '').getTime() - new Date(msg.fecha || '').getTime()) < 2000
-        );
-        
-        if (!existe) {
-          this.mensajes.push(msg);
-          console.log('✅ Mensaje agregado al chat activo');
-          setTimeout(() => this.scrollToBottom(), 100);
-        } else {
-          console.log('⚠️ Mensaje duplicado detectado, no se agrega');
-        }
-      } else {
-        // Incrementar notificaciones si el cliente no está seleccionado
-        const cliente = this.clientes.find(c => c.id === msg.clienteId);
-        if (cliente && msg.remitente === 'cliente') {
-          cliente.notificaciones = (cliente.notificaciones || 0) + 1;
-          cliente.ultimoMensaje = msg.mensaje;
-          console.log(`🔔 Notificación para ${cliente.nombre}`);
-        }
-
-        // Si es un cliente nuevo, agregarlo a la lista
-        if (!cliente && msg.remitente === 'cliente' && msg.clienteId) {
-          this.clientes.push({
-            id: msg.clienteId,
-            nombre: msg.nombre || `Cliente ${msg.clienteId.substring(0, 8)}`,
-            notificaciones: 1,
-            ultimoMensaje: msg.mensaje
-          });
-          console.log('✅ Nuevo cliente agregado:', msg.clienteId);
-        }
-
-        // 🔔 Actualizar notificaciones globales
-        const totalClientesConNuevos = this.clientes.filter(c => c.notificaciones && c.notificaciones > 0).length;
-        this.chatNotifService.actualizar(totalClientesConNuevos);
+      if (!cliente && msg.remitente === 'cliente' && msg.clienteId) {
+        this.clientes.push({
+          id: msg.clienteId,
+          nombre: msg.nombre || `Cliente ${msg.clienteId.substring(0, 8)}`,
+          notificaciones: 1,
+          ultimoMensaje: msg.mensaje
+        });
       }
-    });
+
+      const total = this.clientes.filter(c => c.notificaciones && c.notificaciones > 0).length;
+      this.chatNotifService.actualizar(total);
+    }
+  });
+});
+
 
     // Escuchar chat eliminado
     this.socket.on('chat-eliminado', (data: { clienteId: string }) => {

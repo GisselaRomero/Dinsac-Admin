@@ -32,7 +32,7 @@ export class BannerofertasComponent {
   tipoBanner: string = 'principal';
   isLoading: boolean = false;
 
-  private readonly API_URL = 'https://backend-dinsac-77sq.onrender.com/banner';
+  private readonly API_URL = 'https://backend-dinsac-hlf0.onrender.com/banner';
 
   constructor(private http: HttpClient) {}
 
