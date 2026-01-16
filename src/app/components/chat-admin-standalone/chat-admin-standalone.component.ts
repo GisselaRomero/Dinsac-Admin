@@ -2,8 +2,8 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { io, Socket } from 'socket.io-client';
-import { ChatNotificationService } from 'src/app/services/chat-notification.service';
 import { HttpClientModule, HttpClient } from '@angular/common/http';
+import { ChatNotificationService } from 'src/app/services/chat-notification.service';
 
 interface Mensaje {
   remitente: 'cliente' | 'admin';
@@ -11,6 +11,7 @@ interface Mensaje {
   clienteId: string | null;
   nombre?: string;
   fecha?: string;
+  
 }
 
 interface Cliente {
@@ -18,6 +19,7 @@ interface Cliente {
   nombre: string;
   notificaciones?: number;
   ultimoMensaje?: string;
+  
 }
 
 @Component({
@@ -50,11 +52,13 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
       console.error('❌ Error conectando Socket.IO:', error);
     });
 
-    // ✅ PRIMERO: Cargar notificaciones guardadas
-    this.cargarNotificacionesGuardadas();
-    
-    // ✅ SEGUNDO: Cargar clientes y fusionar con notificaciones
     this.cargarClientes();
+
+
+    setTimeout(() => {
+  this.cargarNotificaciones();
+}, 300);
+
 
     // Escuchar mensajes
     this.socket.on('mensaje', (msg: Mensaje) => {
@@ -82,35 +86,47 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
           console.log('⚠️ Mensaje duplicado detectado, no se agrega');
         }
       } else {
-        // ✅ INCREMENTAR NOTIFICACIONES SOLO SI ES DE UN CLIENTE
-        if (msg.remitente === 'cliente' && msg.clienteId) {
-          let cliente = this.clientes.find(c => c.id === msg.clienteId);
-          
-          // Si el cliente no existe, crearlo
-          if (!cliente) {
-            cliente = {
-              id: msg.clienteId,
-              nombre: msg.nombre || `Cliente ${msg.clienteId.substring(0, 8)}`,
-              notificaciones: 0,
-              ultimoMensaje: ''
-            };
-            this.clientes.push(cliente);
-            console.log('✅ Nuevo cliente agregado:', msg.clienteId);
-          }
-          
-          // Incrementar notificaciones
-          cliente.notificaciones = (cliente.notificaciones || 0) + 1;
-          cliente.ultimoMensaje = msg.mensaje;
-          
-          // ✅ GUARDAR INMEDIATAMENTE
-          this.guardarNotificaciones();
-          
-          console.log(`🔔 Notificación para ${cliente.nombre}: ${cliente.notificaciones}`);
+        // Incrementar notificaciones si el cliente no está seleccionado
+        const cliente = this.clientes.find(c => c.id === msg.clienteId);
+if (msg.remitente === 'cliente' && msg.clienteId) {
+
+  let cliente = this.clientes.find(c => c.id === msg.clienteId);
+
+  // 🆕 SI NO EXISTE, CREARLO
+  if (!cliente) {
+    cliente = {
+      id: msg.clienteId,
+      nombre: msg.nombre || `Cliente ${msg.clienteId.substring(0, 8)}`,
+          ultimoMensaje: '',
+      notificaciones: 0
+    };
+    this.clientes.push(cliente);
+  }
+
+  // 🔔 SOLO SI NO ESTÁ SELECCIONADO
+  if (msg.clienteId !== this.clienteSeleccionado) {
+    cliente.notificaciones = (cliente.notificaciones || 0) + 1;
+    cliente.ultimoMensaje = msg.mensaje;
+    this.guardarNotificaciones();
+  }
+}
+
+
+        // Si es un cliente nuevo, agregarlo a la lista
+        if (!cliente && msg.remitente === 'cliente' && msg.clienteId) {
+          this.clientes.push({
+            id: msg.clienteId,
+            nombre: msg.nombre || `Cliente ${msg.clienteId.substring(0, 8)}`,
+            notificaciones: 1,
+            ultimoMensaje: msg.mensaje
+          });
+          console.log('✅ Nuevo cliente agregado:', msg.clienteId);
         }
+
+        // 🔔 Actualizar notificaciones globales
+        const totalClientesConNuevos = this.clientes.filter(c => c.notificaciones && c.notificaciones > 0).length;
+        this.chatNotifService.actualizar(totalClientesConNuevos);
       }
-      
-      // 🔔 Actualizar contador global
-      this.actualizarContadorGlobal();
     });
 
     // Escuchar chat eliminado
@@ -123,88 +139,56 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
       }
 
       this.clientes = this.clientes.filter(c => c.id !== data.clienteId);
-      this.guardarNotificaciones();
-      this.actualizarContadorGlobal();
+
+      // Actualizar notificaciones globales
+      const totalClientesConNuevos = this.clientes.filter(c => c.notificaciones && c.notificaciones > 0).length;
+      this.chatNotifService.actualizar(totalClientesConNuevos);
     });
   }
 
-  // ✅ GUARDAR notificaciones en localStorage
-  guardarNotificaciones() {
-    const notificaciones = this.clientes.map(c => ({
-      id: c.id,
-      nombre: c.nombre,
-      notificaciones: c.notificaciones || 0,
-      ultimoMensaje: c.ultimoMensaje || ''
-    }));
-    
-    localStorage.setItem('chat_notificaciones', JSON.stringify(notificaciones));
-    console.log('💾 Notificaciones guardadas:', notificaciones.filter(n => n.notificaciones > 0));
-  }
 
-  // ✅ CARGAR notificaciones desde localStorage (antes de cargar clientes)
-  cargarNotificacionesGuardadas() {
-    const data = localStorage.getItem('chat_notificaciones');
-    if (!data) {
-      console.log('📭 No hay notificaciones guardadas');
-      return;
+
+mostrarToast = false;
+toastTexto = '';
+
+
+
+
+guardarNotificaciones() {
+  localStorage.setItem('chat_notificaciones', JSON.stringify(this.clientes));
+}
+
+cargarNotificaciones() {
+  const data = localStorage.getItem('chat_notificaciones');
+  if (!data) return;
+
+  const guardados: Cliente[] = JSON.parse(data);
+
+  this.clientes.forEach(cliente => {
+    const encontrado = guardados.find(g => g.id === cliente.id);
+    if (encontrado) {
+      cliente.notificaciones = encontrado.notificaciones || 0;
+      cliente.ultimoMensaje = encontrado.ultimoMensaje || '';
     }
+  });
+}
 
-    try {
-      const guardados: Cliente[] = JSON.parse(data);
-      console.log('📥 Notificaciones cargadas desde localStorage:', guardados.filter(g => g.notificaciones && g.notificaciones > 0));
-      
-      // Crear clientes temporales con las notificaciones guardadas
-      this.clientes = guardados.map(g => ({
-        id: g.id,
-        nombre: g.nombre,
-        notificaciones: g.notificaciones || 0,
-        ultimoMensaje: g.ultimoMensaje || ''
-      }));
-      
-      // Actualizar contador global inmediatamente
-      this.actualizarContadorGlobal();
-    } catch (error) {
-      console.error('❌ Error parseando notificaciones:', error);
-      localStorage.removeItem('chat_notificaciones');
-    }
-  }
-
-  // ✅ CARGAR clientes desde backend
   cargarClientes(): void {
     this.http.get<Cliente[]>('https://backend-dinsac-77sq.onrender.com/clientes-chat')
       .subscribe({
         next: (res) => {
-          console.log('📋 Clientes recibidos del backend:', res.length);
-          
-          // Fusionar clientes del backend con notificaciones guardadas
-          res.forEach(clienteBackend => {
-            const clienteExistente = this.clientes.find(c => c.id === clienteBackend.id);
-            
-            if (clienteExistente) {
-              // Mantener las notificaciones pero actualizar el nombre si cambió
-              clienteExistente.nombre = clienteBackend.nombre;
-            } else {
-              // Nuevo cliente sin notificaciones
+          const idsExistentes = new Set(this.clientes.map(c => c.id));
+          res.forEach(cliente => {
+            if (!idsExistentes.has(cliente.id)) {
               this.clientes.push({
-                id: clienteBackend.id,
-                nombre: clienteBackend.nombre,
+                id: cliente.id,
+                nombre: cliente.nombre,
                 notificaciones: 0,
                 ultimoMensaje: ''
               });
             }
           });
-          
-          // Eliminar clientes que ya no existen en el backend
-          this.clientes = this.clientes.filter(c => 
-            res.some(r => r.id === c.id)
-          );
-          
-          console.log('✅ Clientes finales:', this.clientes.length);
-          console.log('🔔 Con notificaciones:', this.clientes.filter(c => c.notificaciones && c.notificaciones > 0));
-          
-          // Guardar estado actualizado
-          this.guardarNotificaciones();
-          this.actualizarContadorGlobal();
+          console.log('✅ Clientes cargados:', this.clientes.length);
         },
         error: (err) => {
           console.error('❌ Error cargando clientes:', err);
@@ -213,25 +197,24 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
       });
   }
 
-  // ✅ SELECCIONAR cliente y limpiar notificaciones
   seleccionarCliente(clienteId: string): void {
     console.log('👤 Seleccionando cliente:', clienteId);
     this.clienteSeleccionado = clienteId;
     this.mensajes = [];
 
-    // ✅ LIMPIAR notificaciones solo al seleccionar
-    const cliente = this.clientes.find(c => c.id === clienteId);
-    if (cliente) {
-      console.log(`🔕 Limpiando ${cliente.notificaciones || 0} notificaciones de ${cliente.nombre}`);
-      cliente.notificaciones = 0;
-      cliente.ultimoMensaje = '';
-      
-      // ✅ GUARDAR INMEDIATAMENTE
-      this.guardarNotificaciones();
-      this.actualizarContadorGlobal();
-    }
+const cliente = this.clientes.find(c => c.id === clienteId);
+if (cliente) {
+  cliente.notificaciones = 0;
+  cliente.ultimoMensaje = '';
 
-    // Cargar historial
+    this.guardarNotificaciones(); // ✅ FALTABA ESTO
+
+}
+    // 🔔 Actualizar notificaciones globales
+    const totalClientesConNuevos = this.clientes.filter(c => c.notificaciones && c.notificaciones > 0).length;
+    this.chatNotifService.actualizar(totalClientesConNuevos);
+
+
     this.http.get<Mensaje[]>(`https://backend-dinsac-77sq.onrender.com/chats/${clienteId}`)
       .subscribe({
         next: (res) => {
@@ -247,16 +230,6 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
         },
         error: (err) => console.error('❌ Error cargando historial:', err)
       });
-  }
-
-  // ✅ ACTUALIZAR contador global de notificaciones
-  actualizarContadorGlobal() {
-    const totalClientesConNotificaciones = this.clientes.filter(
-      c => c.notificaciones && c.notificaciones > 0
-    ).length;
-    
-    this.chatNotifService.actualizar(totalClientesConNotificaciones);
-    console.log('🔔 Contador global actualizado:', totalClientesConNotificaciones);
   }
 
   enviarMensaje() {
@@ -326,10 +299,11 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
           this.mensajes = [];
           this.clienteSeleccionado = null;
           this.clientes = this.clientes.filter(c => c.id !== clienteIdAEliminar);
-          
-          // ✅ GUARDAR Y ACTUALIZAR
-          this.guardarNotificaciones();
-          this.actualizarContadorGlobal();
+this.guardarNotificaciones();
+
+          // 🔔 Actualizar notificaciones globales
+          const totalClientesConNuevos = this.clientes.filter(c => c.notificaciones && c.notificaciones > 0).length;
+          this.chatNotifService.actualizar(totalClientesConNuevos);
 
           alert('Conversación eliminada correctamente');
         },
@@ -339,6 +313,7 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
         }
       });
   }
+  
 
   scrollToBottom(): void {
     const cont = document.querySelector('.mensajes');
