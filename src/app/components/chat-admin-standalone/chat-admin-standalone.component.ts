@@ -111,18 +111,6 @@ if (msg.remitente === 'cliente' && msg.clienteId) {
   }
 }
 
-
-        // Si es un cliente nuevo, agregarlo a la lista
-        if (!cliente && msg.remitente === 'cliente' && msg.clienteId) {
-          this.clientes.push({
-            id: msg.clienteId,
-            nombre: msg.nombre || `Cliente ${msg.clienteId.substring(0, 8)}`,
-            notificaciones: 1,
-            ultimoMensaje: msg.mensaje
-          });
-          console.log('✅ Nuevo cliente agregado:', msg.clienteId);
-        }
-
         // 🔔 Actualizar notificaciones globales
         const totalClientesConNuevos = this.clientes.filter(c => c.notificaciones && c.notificaciones > 0).length;
         this.chatNotifService.actualizar(totalClientesConNuevos);
