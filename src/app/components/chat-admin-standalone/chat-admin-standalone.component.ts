@@ -1,9 +1,10 @@
 import { Component, OnInit, OnDestroy, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { io, Socket } from 'socket.io-client';
+import { Socket } from 'socket.io-client';
 import { HttpClientModule, HttpClient } from '@angular/common/http';
 import { ChatNotificationService } from 'src/app/services/chat-notification.service';
+import { Subscription } from 'rxjs';
 
 interface Mensaje {
   remitente: 'cliente' | 'admin';
@@ -11,7 +12,6 @@ interface Mensaje {
   clienteId: string | null;
   nombre?: string;
   fecha?: string;
-  
 }
 
 interface Cliente {
@@ -19,12 +19,10 @@ interface Cliente {
   nombre: string;
   notificaciones?: number;
   ultimoMensaje?: string;
-  
 }
 
 @Component({
   selector: 'app-chat-admin-standalone',
-  
   standalone: true,
   imports: [CommonModule, FormsModule, HttpClientModule],
   templateUrl: './chat-admin-standalone.component.html',
@@ -36,116 +34,30 @@ export class ChatAdminStandaloneComponent implements OnInit, OnDestroy {
   clientes: Cliente[] = [];
   clienteSeleccionado: string | null = null;
   socket!: Socket;
+  mostrarToast = false;
+  toastTexto = '';
+  
+  private clientesSub!: Subscription;
 
-  constructor(private http: HttpClient, private chatNotifService: ChatNotificationService,  private ngZone: NgZone
-) {}
+  constructor(
+    private http: HttpClient, 
+    private chatNotifService: ChatNotificationService,
+    private ngZone: NgZone
+  ) {}
 
   ngOnInit(): void {
-    this.socket = io('https://backend-dinsac-hlf0.onrender.com', {
-      transports: ['websocket', 'polling']
+    // 🔹 Usar el socket del servicio global en lugar de crear uno nuevo
+    this.socket = this.chatNotifService.getSocket();
+
+    // 🔹 Suscribirse a los clientes del servicio
+    this.clientesSub = this.chatNotifService.clientes$.subscribe(clientes => {
+      this.clientes = clientes;
     });
 
-    this.socket.on('connect', () => {
-      console.log('✅ Admin conectado a Socket.IO');
-      this.socket.emit('registrar', { clienteId: 'ADMIN' });
-    });
+    // 🔹 Cargar clientes iniciales del servicio
+    this.clientes = this.chatNotifService.getClientes();
 
-    this.socket.on('connect_error', (error) => {
-      console.error('❌ Error conectando Socket.IO:', error);
-    });
-
-    this.cargarClientes();
-
-    // Escuchar mensajes
-this.socket.on('mensaje', (msg: Mensaje) => {
-  this.ngZone.run(() => {
-    console.log('📩 Mensaje recibido por admin:', msg);
-
-    if (msg.remitente === 'cliente' && msg.clienteId) {
-      const cliente = this.clientes.find(c => c.id === msg.clienteId);
-      msg.nombre = cliente ? cliente.nombre : msg.nombre || 'Cliente';
-    }
-
-    if (msg.clienteId === this.clienteSeleccionado) {
-      const existe = this.mensajes.some(
-        m =>
-          m.mensaje === msg.mensaje &&
-          m.remitente === msg.remitente &&
-          Math.abs(
-            new Date(m.fecha || '').getTime() -
-            new Date(msg.fecha || '').getTime()
-          ) < 2000
-      );
-
-      if (!existe) {
-        this.mensajes.push(msg);
-        setTimeout(() => this.scrollToBottom(), 100);
-      }
-    } else {
-      const cliente = this.clientes.find(c => c.id === msg.clienteId);
-
-      if (cliente && msg.remitente === 'cliente') {
-        cliente.notificaciones = (cliente.notificaciones || 0) + 1;
-        cliente.ultimoMensaje = msg.mensaje;
-      }
-
-      if (!cliente && msg.remitente === 'cliente' && msg.clienteId) {
-        this.clientes.push({
-          id: msg.clienteId,
-          nombre: msg.nombre || `Cliente ${msg.clienteId.substring(0, 8)}`,
-          notificaciones: 1,
-          ultimoMensaje: msg.mensaje
-        });
-      }
-
-      const total = this.clientes.filter(c => c.notificaciones && c.notificaciones > 0).length;
-      this.chatNotifService.actualizar(total);
-    }
-  });
-});
-
-
-    // Escuchar chat eliminado
-    this.socket.on('chat-eliminado', (data: { clienteId: string }) => {
-      console.log('🗑️ Chat eliminado:', data.clienteId);
-
-      if (this.clienteSeleccionado === data.clienteId) {
-        this.clienteSeleccionado = null;
-        this.mensajes = [];
-      }
-
-      this.clientes = this.clientes.filter(c => c.id !== data.clienteId);
-
-      // Actualizar notificaciones globales
-      const totalClientesConNuevos = this.clientes.filter(c => c.notificaciones && c.notificaciones > 0).length;
-      this.chatNotifService.actualizar(totalClientesConNuevos);
-    });
-  }
-mostrarToast = false;
-toastTexto = '';
-
-  cargarClientes(): void {
-    this.http.get<Cliente[]>('https://backend-dinsac-hlf0.onrender.com/clientes-chat')
-      .subscribe({
-        next: (res) => {
-          const idsExistentes = new Set(this.clientes.map(c => c.id));
-          res.forEach(cliente => {
-            if (!idsExistentes.has(cliente.id)) {
-              this.clientes.push({
-                id: cliente.id,
-                nombre: cliente.nombre,
-                notificaciones: 0,
-                ultimoMensaje: ''
-              });
-            }
-          });
-          console.log('✅ Clientes cargados:', this.clientes.length);
-        },
-        error: (err) => {
-          console.error('❌ Error cargando clientes:', err);
-          alert('Error al cargar clientes. Verifica que el backend esté corriendo.');
-        }
-      });
+    console.log('✅ Chat admin inicializado con socket global');
   }
 
   seleccionarCliente(clienteId: string): void {
@@ -153,12 +65,8 @@ toastTexto = '';
     this.clienteSeleccionado = clienteId;
     this.mensajes = [];
 
-    const cliente = this.clientes.find(c => c.id === clienteId);
-    if (cliente) cliente.notificaciones = 0;
-
-    // 🔔 Actualizar notificaciones globales
-    const totalClientesConNuevos = this.clientes.filter(c => c.notificaciones && c.notificaciones > 0).length;
-    this.chatNotifService.actualizar(totalClientesConNuevos);
+    // 🔔 Limpiar notificaciones usando el servicio
+    this.chatNotifService.limpiarNotificaciones(clienteId);
 
     this.http.get<Mensaje[]>(`https://backend-dinsac-hlf0.onrender.com/chats/${clienteId}`)
       .subscribe({
@@ -243,12 +151,6 @@ toastTexto = '';
         next: () => {
           this.mensajes = [];
           this.clienteSeleccionado = null;
-          this.clientes = this.clientes.filter(c => c.id !== clienteIdAEliminar);
-
-          // 🔔 Actualizar notificaciones globales
-          const totalClientesConNuevos = this.clientes.filter(c => c.notificaciones && c.notificaciones > 0).length;
-          this.chatNotifService.actualizar(totalClientesConNuevos);
-
           alert('Conversación eliminada correctamente');
         },
         error: (err) => {
@@ -257,7 +159,6 @@ toastTexto = '';
         }
       });
   }
-  
 
   scrollToBottom(): void {
     const cont = document.querySelector('.mensajes');
@@ -265,10 +166,11 @@ toastTexto = '';
   }
 
   ngOnDestroy(): void {
-    if (this.socket) {
-      this.socket.disconnect();
-      console.log('🔴 Admin desconectado');
+    // 🔹 NO desconectar el socket aquí, solo desuscribirse
+    if (this.clientesSub) {
+      this.clientesSub.unsubscribe();
     }
+    console.log('🔴 Chat admin desmontado (socket sigue activo)');
   }
 
   getClienteNombre(): string {
