@@ -23,50 +23,50 @@ import 'pdfmake/build/vfs_fonts';
 })
 export class DashboardComponent implements OnInit {
 
-  // ----- KPIs -----
-  totalInteraccionesIA = 0;
+  // ----- KPIs BÁSICOS -----
   totalCotizaciones = 0;
-  totalClientes = 0;
+  totalClientes ;
   tasaConversion = 0;
 
+  // ----- NUEVAS MÉTRICAS -----
+  cotizacionesVendidas = 0;
+  cotizacionesMesActual = 0;
+  cotizacionesMesAnterior = 0;
+  crecimientoMesAnterior = 0;
+  cotizacionesPendientes = 0;
+  pendientesRecientes = 0;
 
-  // NUEVO: Variables para tiempo de atención
-tiempoPromedioAtencion = 0; // en horas
-tiempoMinimo = 0;
-tiempoMaximo = 0;
-tendenciaTiempo = '-15%'; // mejora = negativo
+  // ----- TENDENCIAS -----
+  tendenciaClientes ;
+  tendenciaCotizaciones ;
+  tendenciaConversion ;
+  tendenciaMesActual ;
 
-
-  // Tendencias (nuevo)
-  tendenciaClientes = '+12%';
-  tendenciaInteracciones = '+28%';
-  tendenciaCotizaciones = '+8%';
-
-  // Historial de cotizaciones (base)
+  // ----- HISTORIAL -----
   historialCotizaciones: any[] = [];
   historialOriginal: any[] = [];
 
-  // filtros
+  // ----- FILTROS -----
   filtroTexto: string = '';
   fechaDesde: string = '';
   fechaHasta: string = '';
   filtroContacto: string = '';
   filtroCategoria: string = '';
 
-  // paginación
+  // ----- PAGINACIÓN -----
   paginaActual = 1;
   itemsPorPagina = 10;
   totalPaginas = 0;
 
-  // listas de filtros
+  // ----- LISTAS DE FILTROS -----
   categoriasDisponibles: string[] = [];
   tiposContactoDisponibles: string[] = [];
 
-  // TOPS
+  // ----- TOPS -----
   topProductos: { name: string, count: number, porcentaje: number }[] = [];
   topClientes: { name: string, count: number }[] = [];
 
-  // Datos para gráfica de barras (cotizaciones por mes)
+  // ----- GRÁFICA DE BARRAS -----
   cotizacionesPorMes: { [key: string]: number } = {};
   barChartData: ChartConfiguration<'bar'>['data'] = {
     labels: [],
@@ -106,7 +106,7 @@ tendenciaTiempo = '-15%'; // mejora = negativo
     }
   };
 
-  // Gráfica de pie (canales de contacto) - NUEVO
+  // ----- GRÁFICA DE PIE -----
   pieChartData: ChartConfiguration<'pie'>['data'] = {
     labels: [],
     datasets: [{
@@ -138,7 +138,7 @@ tendenciaTiempo = '-15%'; // mejora = negativo
     }
   };
 
-  // getter para paginación en template
+  // ----- GETTERS -----
   get cotizacionesPaginadas(): any[] {
     const inicio = (this.paginaActual - 1) * this.itemsPorPagina;
     const fin = inicio + this.itemsPorPagina;
@@ -170,12 +170,7 @@ tendenciaTiempo = '-15%'; // mejora = negativo
       this.totalClientes = cli.length;
     });
 
-    // Cargar interacciones IA
-    this.http.get<any[]>('https://backend-dinsac-77sq.onrender.com/interacciones').subscribe(data => {
-      this.totalInteraccionesIA = Array.isArray(data) ? data.length : 0;
-    });
-
-    // Total cotizaciones
+    // Cargar cotizaciones
     this.http.get<any[]>('https://backend-dinsac-77sq.onrender.com/cotizaciones').subscribe(data => {
       const ordenadas = Array.isArray(data) 
         ? data.sort((a: any, b: any) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()) 
@@ -185,72 +180,71 @@ tendenciaTiempo = '-15%'; // mejora = negativo
       this.historialOriginal = [...ordenadas];
       this.totalCotizaciones = this.historialCotizaciones.length;
 
-      // Calcular tasa de conversión
+      // Calcular todas las métricas
       this.calcularTasaConversion();
-
-      // extraer datos para filtros y tops
       this.extraerFiltrosUnicos();
       this.generarTops();
       this.generarGraficaPorMes();
-      this.generarCanalesContacto(); // NUEVO
+      this.generarCanalesContacto();
       this.calcularPaginacion();
     });
   }
 
-  // NUEVO: Calcular tasa de conversión
-// NUEVO: Calcular tasa de conversión Y tiempo de atención
-// NUEVO: Calcular tasa de conversión Y tiempo de atención
-calcularTasaConversion() {
-  if (this.totalInteraccionesIA > 0) {
-    this.tasaConversion = Math.round((this.totalCotizaciones / this.totalInteraccionesIA) * 100);
-  }
-  
-  // Calcular tiempos de atención
-  this.calcularTiemposAtencion();
-}
+  // ===== CALCULAR TODAS LAS MÉTRICAS =====
+  calcularTasaConversion() {
+    // 1. Calcular cotizaciones vendidas
+    this.cotizacionesVendidas = this.historialOriginal.filter(
+      cot => cot.estado?.toLowerCase() === 'completada' || 
+             cot.estado?.toLowerCase() === 'atendida'
+    ).length;
 
-// NUEVO: Calcular tiempos promedio, mínimo y máximo
-calcularTiemposAtencion(): void {
-  if (this.historialOriginal.length === 0) {
-    this.tiempoPromedioAtencion = 0;
-    this.tiempoMinimo = 0;
-    this.tiempoMaximo = 0;
-    return;
-  }
-
-  const ahora = new Date().getTime();
-  const tiempos: number[] = [];
-
-  this.historialOriginal.forEach(cot => {
-    if (cot.fecha) {
-      const fechaCotizacion = new Date(cot.fecha).getTime();
-      const horasDesdeCreacion = (ahora - fechaCotizacion) / (1000 * 60 * 60);
-      
-      // Solo considerar cotizaciones de los últimos 30 días para ser más relevante
-      if (horasDesdeCreacion <= 720) { // 720 horas = 30 días
-        tiempos.push(horasDesdeCreacion);
-      }
+    // 2. Calcular tasa de conversión
+    if (this.totalCotizaciones > 0) {
+      this.tasaConversion = Math.round((this.cotizacionesVendidas / this.totalCotizaciones) * 100);
     }
-  });
 
-  if (tiempos.length > 0) {
-    const suma = tiempos.reduce((acc, t) => acc + t, 0);
-    this.tiempoPromedioAtencion = Math.round((suma / tiempos.length) * 10) / 10;
-    this.tiempoMinimo = Math.round(Math.min(...tiempos) * 10) / 10;
-    this.tiempoMaximo = Math.round(Math.max(...tiempos) * 10) / 10;
-  } else {
-    this.tiempoPromedioAtencion = 0;
-    this.tiempoMinimo = 0;
-    this.tiempoMaximo = 0;
+    // 3. Calcular cotizaciones del mes actual
+    const ahora = new Date();
+    const mesActual = ahora.getMonth();
+    const añoActual = ahora.getFullYear();
+
+    this.cotizacionesMesActual = this.historialOriginal.filter(cot => {
+      const fecha = new Date(cot.fecha);
+      return fecha.getMonth() === mesActual && fecha.getFullYear() === añoActual;
+    }).length;
+
+    // 4. Calcular cotizaciones del mes anterior
+    const mesAnterior = mesActual === 0 ? 11 : mesActual - 1;
+    const añoAnterior = mesActual === 0 ? añoActual - 1 : añoActual;
+
+    this.cotizacionesMesAnterior = this.historialOriginal.filter(cot => {
+      const fecha = new Date(cot.fecha);
+      return fecha.getMonth() === mesAnterior && fecha.getFullYear() === añoAnterior;
+    }).length;
+
+    // 5. Calcular crecimiento mensual
+    if (this.cotizacionesMesAnterior > 0) {
+      this.crecimientoMesAnterior = Math.round(
+        ((this.cotizacionesMesActual - this.cotizacionesMesAnterior) / this.cotizacionesMesAnterior) * 100
+      );
+    } else {
+      this.crecimientoMesAnterior = this.cotizacionesMesActual > 0 ? 100 : 0;
+    }
+
+    // 6. Calcular pendientes de seguimiento
+    this.cotizacionesPendientes = this.historialOriginal.filter(
+      cot => cot.estado?.toLowerCase() === 'pendiente'
+    ).length;
+
+    // 7. Calcular pendientes recientes (últimas 48 horas)
+    const hace48h = new Date(ahora.getTime() - (48 * 60 * 60 * 1000));
+    this.pendientesRecientes = this.historialOriginal.filter(cot => {
+      const fecha = new Date(cot.fecha);
+      return cot.estado?.toLowerCase() === 'pendiente' && fecha >= hace48h;
+    }).length;
   }
-}
 
-
-
-
-
-
-  // Extrae categorías y tipos de contacto únicos
+  // ===== EXTRAER FILTROS =====
   extraerFiltrosUnicos(): void {
     const categorias = new Set<string>();
     const tiposContacto = new Set<string>();
@@ -268,17 +262,15 @@ calcularTiemposAtencion(): void {
     this.tiposContactoDisponibles = Array.from(tiposContacto).sort();
   }
 
-  // Genera TOP productos y TOP clientes
+  // ===== GENERAR TOPS =====
   generarTops(): void {
     const contadorProductos: { [key: string]: number } = {};
     const contadorClientes: { [key: string]: number } = {};
 
     this.historialOriginal.forEach(cot => {
-      // contar cliente
       const nombreCliente = cot.nombre || cot.empresa || 'Cliente anónimo';
       contadorClientes[nombreCliente] = (contadorClientes[nombreCliente] || 0) + 1;
 
-      // contar productos
       if (cot.productos && cot.productos.length > 0) {
         cot.productos.forEach((p: any) => {
           const nombreProd = p.equipo || p.nombre || (p.categoria ? `${p.categoria}` : 'Producto');
@@ -287,7 +279,6 @@ calcularTiemposAtencion(): void {
       }
     });
 
-    // Calcular porcentaje para productos
     const maxProductos = Math.max(...Object.values(contadorProductos), 1);
     
     this.topProductos = Object.entries(contadorProductos)
@@ -305,12 +296,11 @@ calcularTiemposAtencion(): void {
       .slice(0, 5);
   }
 
-  // Genera la gráfica: cotizaciones por mes (últimos 6 meses)
+  // ===== GRÁFICA POR MES =====
   generarGraficaPorMes(): void {
     this.cotizacionesPorMes = {};
     const meses = new Set<string>();
 
-    // contar por mes-YYYY
     this.historialOriginal.forEach(cot => {
       if (!cot.fecha) return;
       const d = new Date(cot.fecha);
@@ -320,7 +310,6 @@ calcularTiemposAtencion(): void {
       meses.add(key);
     });
 
-    // ordenar keys y tomar últimos 6 meses
     const keysOrdenadas = Array.from(meses).sort();
     const ultimoIndice = keysOrdenadas.length;
     const keysParaGrafica = keysOrdenadas.slice(Math.max(0, ultimoIndice - 6), ultimoIndice);
@@ -334,7 +323,7 @@ calcularTiemposAtencion(): void {
     this.barChartData.datasets[0].data = keysParaGrafica.map(k => this.cotizacionesPorMes[k] || 0);
   }
 
-  // NUEVO: Genera gráfica de canales de contacto
+  // ===== CANALES DE CONTACTO =====
   generarCanalesContacto(): void {
     const canales: { [key: string]: number } = {
       'WhatsApp': 0,
@@ -360,27 +349,25 @@ calcularTiemposAtencion(): void {
       'No especificado': '#9ca3af'
     };
 
-    // Actualizar gráfica de pie
-this.pieChartData.labels = Object.keys(canales).filter(k => canales[k] > 0);
-  this.pieChartData.datasets[0].data = Object.values(canales).filter(v => v > 0);
-  this.pieChartData.datasets[0].backgroundColor = this.pieChartData.labels.map(
-    l => colores[l as keyof typeof colores]
-  );
-}
+    this.pieChartData.labels = Object.keys(canales).filter(k => canales[k] > 0);
+    this.pieChartData.datasets[0].data = Object.values(canales).filter(v => v > 0);
+    this.pieChartData.datasets[0].backgroundColor = this.pieChartData.labels.map(
+      l => colores[l as keyof typeof colores]
+    );
+  }
 
-  // NUEVO: Colores para productos
+  // ===== COLORES =====
   getColorProducto(index: number): string {
     const colores = ['#3b82f6', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b'];
     return colores[index % colores.length];
   }
 
-  // NUEVO: Colores para clientes
   getColorCliente(index: number): string {
     const colores = ['#3b82f6', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b'];
     return colores[index % colores.length];
   }
 
-  // FILTRADO
+  // ===== FILTRADO =====
   filtrarCotizaciones(): void {
     const texto = this.filtroTexto.toLowerCase().trim();
     this.historialCotizaciones = this.historialOriginal.filter(cot => {
@@ -426,7 +413,7 @@ this.pieChartData.labels = Object.keys(canales).filter(k => canales[k] > 0);
     if (pagina >= 1 && pagina <= this.totalPaginas) this.paginaActual = pagina;
   }
 
-  // EXPORTAR CSV
+  // ===== EXPORTAR CSV =====
   exportarCotizaciones(): void {
     const datos = this.historialCotizaciones.map(cot => ({
       Nombre: cot.nombre || '',
@@ -465,7 +452,7 @@ this.pieChartData.labels = Object.keys(canales).filter(k => canales[k] > 0);
     }
   }
 
-  // PDF - ver / descargar
+  // ===== PDF =====
   verPDF(cot: any) {
     if (!cot.pdfBase64) {
       alert("Esta cotización no tiene PDF guardado");
@@ -504,7 +491,7 @@ this.pieChartData.labels = Object.keys(canales).filter(k => canales[k] > 0);
       this.http.delete(`https://backend-dinsac-77sq.onrender.com/cotizaciones/${id}`).subscribe({
         next: () => {
           alert('Cotización eliminada exitosamente');
-          this.cargarDatos(); // Recargar datos
+          this.cargarDatos();
         },
         error: (err) => {
           console.error('Error al eliminar:', err);
@@ -514,7 +501,6 @@ this.pieChartData.labels = Object.keys(canales).filter(k => canales[k] > 0);
     }
   }
 
-  // Generador del contenido del PDF
   getDocumentDefinition(cot: any) {
     return {
       content: [
@@ -553,7 +539,6 @@ this.pieChartData.labels = Object.keys(canales).filter(k => canales[k] > 0);
     });
   }
 
-  // helper: cuando cambian filtros en UI
   onFiltroChange(): void {
     this.filtrarCotizaciones();
   }

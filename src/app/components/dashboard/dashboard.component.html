@@ -24,16 +24,7 @@
       <p class="kpi-value">{{ totalClientes }}</p>
     </div>
 
-    <div class="kpi-card">
-      <div class="kpi-header">
-        <div class="kpi-icon purple">
-          <i class="fas fa-comments"></i>
-        </div>
-        <span class="kpi-trend positive">{{ tendenciaInteracciones }}</span>
-      </div>
-      <h3 class="kpi-label">Interacciones IA</h3>
-      <p class="kpi-value">{{ totalInteraccionesIA }}</p>
-    </div>
+
 
     <div class="kpi-card">
       <div class="kpi-header">
@@ -46,25 +37,77 @@
       <p class="kpi-value">{{ totalCotizaciones }}</p>
     </div>
 
-    <!-- ✅ KPI MODIFICADO: Tiempo de Atención -->
-    <div class="kpi-card">
-      <div class="kpi-header">
-        <div class="kpi-icon orange">
-          <i class="fas fa-clock"></i>
-        </div>
-        <span class="kpi-trend negative">{{ tendenciaTiempo }}</span>
-      </div>
-      <h3 class="kpi-label">Tiempo Promedio Atención</h3>
-      <p class="kpi-value">{{ tiempoPromedioAtencion }}h</p>
-      <div class="kpi-details">
-        <span class="detail-item">
-          <i class="fas fa-arrow-down"></i> Mín: {{ tiempoMinimo }}h
-        </span>
-        <span class="detail-item">
-          <i class="fas fa-arrow-up"></i> Máx: {{ tiempoMaximo }}h
-        </span>
-      </div>
+
+    <!-- ✅ NUEVO: Tasa de Conversión -->
+<div class="kpi-card">
+  <div class="kpi-header">
+    <div class="kpi-icon green">
+      <i class="fas fa-chart-line"></i>
     </div>
+    <span class="kpi-trend positive">{{ tendenciaConversion }}</span>
+  </div>
+  <h3 class="kpi-label">Tasa de Conversión</h3>
+  <p class="kpi-value">{{ tasaConversion }}%</p>
+  <div class="kpi-details">
+    <span class="detail-item">
+      {{ cotizacionesVendidas }} vendidas de {{ totalCotizaciones }}
+    </span>
+  </div>
+</div>
+
+<!-- ✅ NUEVO: Cotizaciones Este Mes -->
+<div class="kpi-card">
+  <div class="kpi-header">
+    <div class="kpi-icon purple">
+      <i class="fas fa-calendar-check"></i>
+    </div>
+    <span class="kpi-trend positive">{{ tendenciaMesActual }}</span>
+  </div>
+  <h3 class="kpi-label">Cotizaciones Este Mes</h3>
+  <p class="kpi-value">{{ cotizacionesMesActual }}</p>
+  <div class="kpi-details">
+    <span class="detail-item">
+      Meta: 50 cotizaciones
+    </span>
+  </div>
+</div>
+
+<!-- ✅ NUEVO: Crecimiento vs Mes Anterior -->
+<div class="kpi-card">
+  <div class="kpi-header">
+    <div class="kpi-icon orange">
+      <i class="fas fa-chart-bar"></i>
+    </div>
+    <span class="kpi-trend" [class.positive]="crecimientoMesAnterior >= 0" [class.negative]="crecimientoMesAnterior < 0">
+      {{ crecimientoMesAnterior > 0 ? '+' : '' }}{{ crecimientoMesAnterior }}%
+    </span>
+  </div>
+  <h3 class="kpi-label">Crecimiento Mensual</h3>
+  <p class="kpi-value">{{ crecimientoMesAnterior > 0 ? '📈' : crecimientoMesAnterior < 0 ? '📉' : '➡️' }}</p>
+  <div class="kpi-details">
+    <span class="detail-item">
+      vs mes anterior: {{ cotizacionesMesAnterior }}
+    </span>
+  </div>
+</div>
+
+<!-- ✅ NUEVO: Pendientes de Seguimiento -->
+<div class="kpi-card">
+  <div class="kpi-header">
+    <div class="kpi-icon yellow">
+      <i class="fas fa-hourglass-half"></i>
+    </div>
+    <span class="kpi-trend warning">{{ cotizacionesPendientes }}</span>
+  </div>
+  <h3 class="kpi-label">Requieren Seguimiento</h3>
+  <p class="kpi-value">{{ cotizacionesPendientes }}</p>
+  <div class="kpi-details">
+    <span class="detail-item">
+      Últimas 48h: {{ pendientesRecientes }}
+    </span>
+  </div>
+</div>
+
   </div>
 
   <!-- Gráficas principales -->
